@@ -1,0 +1,103 @@
+name: order-duality
+services:
+  mysql:
+    image: mysql:9.7.2@sha256:30a0abfa7b502a496e12339b54cd07aaa70363396dc4b8e8a72a92804a505cd6
+    environment:
+      MYSQL_ROOT_PASSWORD: local-root-only
+      MYSQL_ROOT_HOST: "%"
+      TZ: UTC
+    ports:
+      - "127.0.0.1:${MYSQL_PORT:-3307}:3306"
+    command: ["--default-time-zone=+00:00"]
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./sql/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+      - ./sql/duality-views.sql:/docker-entrypoint-initdb.d/03-duality-views.sql:ro
+      - ./sql/users.sql:/docker-entrypoint-initdb.d/04-users.sql:ro
+      - ./sql/agent-user.sql:/docker-entrypoint-initdb.d/05-agent-user.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_ROOT_PASSWORD mysql -h 127.0.0.1 -uroot -Nse 'SELECT COUNT(*) FROM order_demo.orders_dv' >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  ollama:
+    image: ollama/ollama:0.32.9@sha256:1685741456770df6e3cceb2a945a5f75e020f658d1701509668d6f4688f1dd3f
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_NO_CLOUD: "1"
+      OLLAMA_NUM_PARALLEL: "1"
+    volumes:
+      - ollama-models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    # Only containers use this endpoint; the host's native Ollama can keep port 11434.
+
+  ollama-init:
+    image: ollama/ollama:0.32.9@sha256:1685741456770df6e3cceb2a945a5f75e020f658d1701509668d6f4688f1dd3f
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1:8b}
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - 'ollama show "$$OLLAMA_MODEL" >/dev/null 2>&1 || ollama pull "$$OLLAMA_MODEL"'
+    restart: "no"
+
+  app:
+    image: order-duality-app:local
+    build:
+      context: .
+      target: runtime
+    depends_on:
+      mysql:
+        condition: service_healthy
+      ollama-init:
+        condition: service_completed_successfully
+    environment: &application-environment
+      SERVER_ADDRESS: 0.0.0.0
+      DB_URL: jdbc:mysql://mysql:3306/order_demo?sslMode=DISABLED&allowPublicKeyRetrieval=true&connectionTimeZone=UTC
+      DB_USER: order_api
+      DB_PASSWORD: local-api-only
+      AGENT_DB_USER: order_agent
+      AGENT_DB_PASSWORD: local-agent-only
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.1:8b}
+      OLLAMA_TIMEOUT_SECONDS: ${OLLAMA_TIMEOUT_SECONDS:-300}
+    ports:
+      - "127.0.0.1:${API_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/127.0.0.1/8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
+
+  tests:
+    profiles: ["test"]
+    build:
+      context: .
+      target: build
+    depends_on:
+      mysql:
+        condition: service_healthy
+      ollama-init:
+        condition: service_completed_successfully
+    environment:
+      <<: *application-environment
+      TEST_DB_URL: jdbc:mysql://mysql:3306/?sslMode=DISABLED&allowPublicKeyRetrieval=true&connectionTimeZone=UTC
+      TEST_DB_USER: root
+      TEST_DB_PASSWORD: local-root-only
+    volumes:
+      - ./target/docker:/workspace/target
+    command: ["mvn", "-B", "-ntp", "verify", "-Pintegration,ollama"]
+volumes:
+  mysql-data:
+  ollama-models:

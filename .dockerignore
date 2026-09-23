@@ -1,0 +1,7 @@
+*
+!Dockerfile
+!pom.xml
+!src/
+!src/**
+!sql/
+!sql/**
