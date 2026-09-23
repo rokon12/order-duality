@@ -1,8 +1,14 @@
 Command: mvn -B -ntp clean verify -Pintegration,ollama
-Java: Temurin 25.0.1; Spring Boot 4.1.1; LangChain4j 1.20.0; Jackson 3.1.5; HikariCP 7.0.2
+Java: Temurin 25.0.1; Spring Boot 4.1.1; LangChain4j 1.20.0; Hibernate 7.4.5; Spring Data 4.1.1; Jackson 3.1.5; HikariCP 7.0.2
 MySQL: 9.7.2 Community; Ollama: 0.32.9 (native); model: llama3.1:8b (digest 46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e per ollama list)
 
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0 -- in com.bazlur.orders.ai.MockAgentTest
+Tests run: 15, Failures: 0, Errors: 0, Skipped: 0 -- in com.bazlur.orders.ai.OllamaAgentTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0 -- in com.bazlur.orders.application.OrderServiceTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0 -- in com.bazlur.orders.json.JsonTest
+Tests run: 34, Failures: 0, Errors: 0, Skipped: 0 -- in com.bazlur.orders.integration.DualityIT
+Result: all passed (from target/surefire-reports and target/failsafe-reports)
 
-20 unit tests + 30 MySQL/HTTP integration tests + 3 real Ollama cases.
+20 unit tests + 31 MySQL/HTTP integration tests + 3 real Ollama cases.
 These checks verify tool selection and selected facts, not every natural-language claim.
 See ollama-answer-review.md for manual review and preserved earlier failures.

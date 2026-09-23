@@ -8,7 +8,7 @@ Run: September 23, 2026, on Temurin 25.0.1, after the customer-orders tool began
 | [Order 1001 detail](ollama-order-1001.json) | Calls `getOrder(1001)`; correct products, quantities, purchase prices and PROCESSING status; no currency symbol or code invented | Omits the requested “currency unspecified” label. The numeric prices are accurate, but it does not fully follow the output-format instruction. |
 | [Customer 44 history](ollama-customer-44.json) | Calls `getCustomerOrders(44)`; correctly interprets null history as no orders | Repeats the same conclusion twice. |
 
-All 53 automated checks pass (20 unit, 33 integration, including the three real-model cases). The three real-model tests check tool selection and selected facts; they do not verify every sentence, instruction or presentation detail. This review found no factual error in these three final answers, but it did find incomplete instruction following. Three fixture questions are not a general quality evaluation.
+All 54 automated checks pass (20 unit, 34 integration, including the three real-model cases). The three real-model tests check tool selection and selected facts; they do not verify every sentence, instruction or presentation detail. This review found no factual error in these three final answers, but it did find incomplete instruction following. Three fixture questions are not a general quality evaluation.
 
 The [first LangChain4j price answer](langchain4j-currency-assumption.json) invented dollar signs and failed the unchanged price assertion. Its [build log](langchain4j-first-test-run.txt) is retained. A more explicit item format produced the numeric answer above. This is an observed improvement for the tested question, not a guarantee for future requests.
 

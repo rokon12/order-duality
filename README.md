@@ -48,11 +48,11 @@ The sections below cover [the Compose setup in detail](#run-everything-with-dock
 - A writable order document with a customer object, multiple order lines and nested product objects.
 - A working `GET /orders/{id}` and deliberately restricted `PUT /orders/{id}` for status changes.
 - Document INSERT, UPDATE and DELETE tested directly against MySQL, including adding/removing lines and relational readback.
-- An equally real one-query JDBC/record/Jackson baseline.
+- An equally real one-query JDBC/record/Jackson baseline, plus the same order read through Spring Data JPA (Hibernate) and Spring Data JDBC, with the SQL each path sends captured from MySQL.
 - A real local Ollama agent that chooses read-only tools and answers from MySQL documents. The deterministic mock is also available for offline comparison.
 - Validation, foreign keys, rollback, stale tokens, simultaneous writers, unsupported view definitions and statement forms.
 
-The latest native run passed **20 unit tests and 33 integration tests** on Temurin 25.0.1, with none skipped ([summary](docs/evidence/test-summary.txt)). The containerized suite also passes; its [captured Compose run](docs/evidence/compose/test-summary.txt) is from slightly earlier code with two more unit tests. Older Compose runs are kept in dated folders under [docs/evidence](docs/evidence). This is a functional demonstration, not a throughput benchmark or a production commerce service.
+The latest native run passed **20 unit tests and 34 integration tests** on Temurin 25.0.1, with none skipped ([summary](docs/evidence/test-summary.txt)). The containerized suite also passes; its [captured Compose run](docs/evidence/compose/test-summary.txt) is from earlier code, before the model setup was simplified and the JPA and Spring Data JDBC paths were added. Older Compose runs are kept in dated folders under [docs/evidence](docs/evidence). This is a functional demonstration, not a throughput benchmark or a production commerce service.
 
 The integration total includes three real Ollama cases. The [native](docs/evidence/ollama-answer-review.md) and [Compose](docs/evidence/compose/answer-review.md) answer reviews read the actual prose. One finding shaped the code: the model's history answer changed with the order of the view's `orders` array, which MySQL does not guarantee ([wrong](docs/evidence/compose-2026-09-22/answer-review.md) with one order, [right](docs/evidence/compose-2026-09-23-before-sorting/answer-review.md) with another), so the tool now sorts orders newest first in Java. Even with sorted input and fixed settings, answers can still vary between runs. Passing protocol and selected-value checks is not proof of a correct model explanation.
 
@@ -66,6 +66,7 @@ For the complete Compose setup, install Docker Desktop (or Docker Engine with Co
 | Maven | 3.9.11 in the build container; 3.9.4 for the native investigation |
 | Spring Boot | 4.1.1, Spring MVC with embedded Tomcat |
 | LangChain4j | 1.20.0, including the Ollama integration |
+| Hibernate / Spring Data | Hibernate 7.4.5 with Spring Data JPA 4.1.1, and Spring Data JDBC 4.1.1 (all Boot-managed), for the comparison read paths |
 | MySQL | 9.7.2, `MySQL Community Server - GPL` |
 | Connector/J | 9.7.0 |
 | Jackson | 3.1.5 (Boot-managed) for the application's JSON; LangChain4j uses its own Boot-managed Jackson 2 internally |
@@ -209,15 +210,30 @@ The database trigger maintains `updated_at`. Without it, echoing the old timesta
 
 This is an application policy: direct database DML has a wider surface. In particular, MySQL accepted a stale write **without an etag**, and removing the items collection deleted its rows. Do not treat full replacement as a partial patch.
 
-## Compare the relational path
+## Compare the Java read paths
+
+The same order is also available through three Java-side paths, each returning the same shape ([OrderDetails](src/main/java/com/bazlur/orders/persistence/OrderDetails.java)):
 
 ```bash
-curl -sS http://127.0.0.1:8080/orders/1001/relational | jq .
+curl -sS http://127.0.0.1:8080/orders/1001/relational | jq .        # plain JDBC join + records
+curl -sS http://127.0.0.1:8080/orders/1001/jpa | jq .               # Spring Data JPA / Hibernate
+curl -sS http://127.0.0.1:8080/orders/1001/spring-data-jdbc | jq .  # Spring Data JDBC aggregate
 docker compose exec -T -e MYSQL_PWD=local-root-only mysql \
   mysql -uroot < sql/baseline.sql
 ```
 
-[ConventionalOrderRepository](src/main/java/com/bazlur/orders/persistence/ConventionalOrderRepository.java) uses one joined SELECT, handles a zero-line order, constructs four record types and serializes them. [OrderDocumentRepository](src/main/java/com/bazlur/orders/persistence/OrderDocumentRepository.java) retrieves a JSON string. The baseline has no etag, emits `[]` for empty items and formats timestamps through Connector/J; the populated-order test compares normalized business values rather than claiming byte-for-byte identity.
+An integration test checks that all three return the same business data as the duality view, and records the SQL each one sends by briefly enabling MySQL's general query log ([captured results](docs/evidence/experiments.txt)):
+
+| Path | SELECT statements for order 1001 |
+|---|---|
+| Duality view | 1 |
+| Plain JDBC join | 1 |
+| Spring Data JPA, with a join-fetch query | 1 |
+| Spring Data JDBC | 4: the order, its lines, the customer, the products |
+
+The JPA entities are read-only (`@Immutable`), and [OrderEntityRepository](src/main/java/com/bazlur/orders/persistence/jpa/OrderEntityRepository.java) join-fetches the customer, lines and products to avoid N+1 queries. In Spring Data JDBC the order is an [aggregate](src/main/java/com/bazlur/orders/persistence/springdatajdbc/OrderAggregate.java) that owns its lines; the customer and products are separate aggregates referenced by ID, so showing their names takes extra queries. `application.properties` sets `hibernate.type.java_time_use_direct_jdbc=true`: without it Hibernate read the UTC `DATETIME` values through `java.sql.Timestamp` and shifted them by the JVM's time zone, which the other paths do not. Writes still go only through the duality view.
+
+[ConventionalOrderRepository](src/main/java/com/bazlur/orders/persistence/ConventionalOrderRepository.java) uses one joined SELECT, handles a zero-line order and builds the shared records. [OrderDocumentRepository](src/main/java/com/bazlur/orders/persistence/OrderDocumentRepository.java) retrieves a JSON string. The Java paths have no etag and emit `[]` for an order without lines, where the view returns `null`; the tests compare normalized business values rather than claiming byte-for-byte identity.
 
 ## Ask a local model through Ollama
 
@@ -276,7 +292,7 @@ java -jar target/order-duality.jar --agent --customer-id=44 \
 
 The tested argument conversion is permissive in specific ways: LangChain4j accepts `"1001"` for a `long` and ignores unknown argument properties. It rejects fractional, missing and out-of-range IDs before repository access. Java methods then enforce positive IDs and the customer scope. These checks are separate from the model-facing schema.
 
-Spring Boot wires these components through [DatabaseConfiguration](src/main/java/com/bazlur/orders/config/DatabaseConfiguration.java), [AgentConfiguration](src/main/java/com/bazlur/orders/config/AgentConfiguration.java) and record-based `@ConfigurationProperties`. The same executable jar runs the REST API or an `ApplicationRunner` CLI; `--agent` and `--mock-agent` disable the web server and close the application context on completion. No Spring Data or Hibernate is involved in the JDBC paths.
+Spring Boot wires these components through [DatabaseConfiguration](src/main/java/com/bazlur/orders/config/DatabaseConfiguration.java), [AgentConfiguration](src/main/java/com/bazlur/orders/config/AgentConfiguration.java) and record-based `@ConfigurationProperties`. The same executable jar runs the REST API or an `ApplicationRunner` CLI; `--agent` and `--mock-agent` disable the web server and close the application context on completion. The duality-view and plain-JDBC paths use JDBC directly; Spring Data and Hibernate appear only in the comparison read paths.
 
 Captured real runs cover [customer history](docs/evidence/ollama-customer-42.json), [order details](docs/evidence/ollama-order-1001.json) and [an empty history](docs/evidence/ollama-customer-44.json). Each trace records the configured model name, the actual tool arguments, the returned data and the generated answer. Traces captured before September 23 also include the model digest, size and quantization; the tested digest is listed below. These contain synthetic customer data; trace capture is opt-in for normal CLI runs.
 
@@ -364,7 +380,7 @@ Spring configuration is in [application.properties](src/main/resources/applicati
 - **Business rules:** annotations and relational constraints are not a workflow engine. The API performs status-transition and field checks.
 - **Portability:** MySQL-specific SQL and error codes; tested on 9.7.2 only. A schema/view change is an API contract change.
 - **Model quality:** local inference was tested on three fixture questions. Earlier runs misordered dates and wrongly called a shipped order open; sorting orders in Java fixed the input-order dependence, but a CLI run still misordered sorted input, and identical runs can answer differently. Show order status and ordering from Java and treat the model's text as commentary. Read-only tools and customer scoping constrain access; they do not prove resistance to prompt injection or factual correctness.
-- **Scope:** no full Hibernate implementation, payment/inventory workflow, authentication, pagination, production load test, failover test, or complete DML feature matrix. See [lab notes](docs/lab-notes.md) for the exact boundary of the evidence.
+- **Scope:** the JPA and Spring Data JDBC paths are read-only comparisons; there is no payment/inventory workflow, authentication, pagination, production load test, failover test, or complete DML feature matrix. See [lab notes](docs/lab-notes.md) for the exact boundary of the evidence.
 
 ## Stop or reset
 
@@ -391,7 +407,9 @@ src/main/java/com/bazlur/orders/
   OrdersApplication.java           Spring Boot entry point
   api/                             controllers and HTTP error translation
   application/                     status transitions and document-write policy
-  persistence/                     JDBC repositories and conventional records
+  persistence/                     JDBC repositories and the shared order records
+    jpa/                           Hibernate entities and join-fetch repository (read-only)
+    springdatajdbc/                Spring Data JDBC aggregates and repositories (read-only)
   ai/                              LangChain4j services, scoped tools, Ollama, mock
   cli/                             real-agent and mock commands
   config/                          Spring wiring and configuration records

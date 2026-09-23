@@ -117,6 +117,10 @@ Traces are the serialized `OllamaAgent.Run` record (earlier traces also carried 
 
 Official references: [LangChain4j tools](https://docs.langchain4j.dev/tutorials/tools/), [Ollama integration](https://docs.langchain4j.dev/integrations/language-models/ollama/), and [Spring Boot system requirements](https://docs.spring.io/spring-boot/system-requirements.html), checked September 22, 2026. Versions are pinned in Maven; Boot 4.1.1 supports Java 25. The application does not use a LangChain4j Spring starter or Spring Data.
 
+## Adding JPA and Spring Data JDBC for comparison
+
+To compare the duality view with the tools most Java teams use, the app gained two read-only paths returning the same records as the plain JDBC baseline. MySQL's general query log showed the real cost: one SELECT each for the view, the plain join and JPA with a join-fetch query; four for Spring Data JDBC, because the customer and products sit outside the order aggregate. The JPA path first returned timestamps shifted by the JVM's time zone; reading `java.time` values directly (`hibernate.type.java_time_use_direct_jdbc=true`) fixed it. Writes were not compared and stay on the duality view.
+
 ## Running the full application in Compose
 
 Compose now owns MySQL, Ollama, model initialization and the Spring Boot application. A multi-stage Dockerfile builds with Maven 3.9.11 / Java 25 and runs the jar as UID 10001 on Temurin 25.0.4. An opt-in `tests` service uses the build stage to run JUnit against container services. Host Java, Maven and Ollama are optional.

@@ -1,12 +1,12 @@
-Run: 2026-09-23T19:22:54.932005Z
+Run: 2026-09-23T22:33:12.129811Z
 Server: 9.7.2 | MySQL Community Server - GPL | ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION | REPEATABLE-READ
 Java: 25.0.1
 
-Agent account base-table read -> 1142 / 42000 / SELECT command denied to user 'order_duality_it_e9da478cca40_a'@'172.19.0.1' for table 'orders'
-Agent account document update -> 1142 / 42000 / UPDATE command denied to user 'order_duality_it_e9da478cca40_a'@'172.19.0.1' for table 'orders_dv'
+Agent account base-table read -> 1142 / 42000 / SELECT command denied to user 'order_duality_it_7f14f0d2bbfa_a'@'172.19.0.1' for table 'orders'
+Agent account document update -> 1142 / 42000 / UPDATE command denied to user 'order_duality_it_7f14f0d2bbfa_a'@'172.19.0.1' for table 'orders_dv'
 PASS agentToolsEnforceCustomerScopeAndReadOnlyDatabaseGrants()
-API base-table write -> 1142 / 42000 / UPDATE command denied to user 'order_duality_it_e9da478cca404'@'172.19.0.1' for table 'orders'
-API view INSERT -> 1142 / 42000 / INSERT command denied to user 'order_duality_it_e9da478cca404'@'172.19.0.1' for table 'orders_dv'
+API base-table write -> 1142 / 42000 / UPDATE command denied to user 'order_duality_it_7f14f0d2bbfa4'@'172.19.0.1' for table 'orders'
+API view INSERT -> 1142 / 42000 / INSERT command denied to user 'order_duality_it_7f14f0d2bbfa4'@'172.19.0.1' for table 'orders_dv'
 PASS applicationAccountCannotWriteBaseTablesOrInsertOrders()
 Child ORDER BY -> 6454 / HY000 / Invalid JSON duality view definition: ORDER BY clause is not supported. Object "items" violates this rule.
 Flattened product JOIN -> 6455 / HY000 / Invalid JSON duality view definition: FROM clause must include exactly one table. Object "items" violates this rule.
@@ -22,20 +22,20 @@ PASS failedMultiTableUpdateIsAtomic()
 PASS httpReadUpdateValidationAndConflict()
 PASS insertAndDeleteAnOrderPreserveSharedEntities()
 Malformed JSON -> 3141 / 22001 / Data truncation: Invalid JSON text in argument 1 to function get_json_wrapper: "Missing a name for object member." at position 1.
-Unmapped key -> 6489 / HY000 / Path '$.discount' is not mapped to any column of `order_duality_it_e9da478cca404e52859f3d1f663fd72f`.`orders`.
+Unmapped key -> 6489 / HY000 / Path '$.discount' is not mapped to any column of `order_duality_it_7f14f0d2bbfa4d0c9f67ff3e0bf61179`.`orders`.
 Wrong JSON type -> 3819 / HY000 / Check constraint 'order_status' is violated.
 PASS invalidJsonAndUnknownFieldsAreRejected()
 Status CHECK -> 3819 / HY000 / Check constraint 'order_status' is violated.
-Missing shared customer -> 6497 / HY000 / Missing UPDATE tag on `order_duality_it_e9da478cca404e52859f3d1f663fd72f`.`customers`.id, path '$.customer.id'.
-Direct FK violation -> 1452 / 23000 / Cannot add or update a child row: a foreign key constraint fails (`order_duality_it_e9da478cca404e52859f3d1f663fd72f`.`orders`, CONSTRAINT `orders_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`))
+Missing shared customer -> 6497 / HY000 / Missing UPDATE tag on `order_duality_it_7f14f0d2bbfa4d0c9f67ff3e0bf61179`.`customers`.id, path '$.customer.id'.
+Direct FK violation -> 1452 / 23000 / Cannot add or update a child row: a foreign key constraint fails (`order_duality_it_7f14f0d2bbfa4d0c9f67ff3e0bf61179`.`orders`, CONSTRAINT `orders_customer` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`))
 PASS invalidStatusAndRelationshipAreRejected()
 PASS jsonColumnCopyDoesNotTrackRelationalChanges()
-FK failure during document insert -> 1452 / 23000 / Cannot add or update a child row: a foreign key constraint fails (`order_duality_it_e9da478cca404e52859f3d1f663fd72f`.`order_items`, CONSTRAINT `items_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`))
+FK failure during document insert -> 1452 / 23000 / Cannot add or update a child row: a foreign key constraint fails (`order_duality_it_7f14f0d2bbfa4d0c9f67ff3e0bf61179`.`order_items`, CONSTRAINT `items_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`))
 PASS lineForeignKeyFailureRollsBackTheInsertedOrder()
 Missing etag: stale document overwrote CANCELLED with SHIPPED
 PASS missingEtagAllowsAStaleDocumentToOverwriteAChange()
-Missing projected scalar -> 6495 / HY000 / Value was not provided for path '$' and could not be inferred for column `order_duality_it_e9da478cca404e52859f3d1f663fd72f`.`orders`.status.
-Changed root PK -> 6496 / HY000 / Cannot update primary key column `order_duality_it_e9da478cca404e52859f3d1f663fd72f`.`orders`.id from path '$._id'.
+Missing projected scalar -> 6495 / HY000 / Value was not provided for path '$' and could not be inferred for column `order_duality_it_7f14f0d2bbfa4d0c9f67ff3e0bf61179`.`orders`.status.
+Changed root PK -> 6496 / HY000 / Cannot update primary key column `order_duality_it_7f14f0d2bbfa4d0c9f67ff3e0bf61179`.`orders`.id from path '$._id'.
 PASS missingScalarAndChangedRootIdentityAreRejected()
 quantity string '3' was converted to SQL INT 3
 PASS numericStringIsCoercedRatherThanRejected()
@@ -46,8 +46,21 @@ PASS ollamaHandlesNullOrderHistory()
 Ollama | llama3.1:8b | calls=[getCustomerOrders] | ollama-customer-42.json
 PASS ollamaSummarizesPendingOrdersUsingARealToolCall()
 PASS oneReplacementUpdatesInsertsAndDeletesLines()
+SQL for GET /orders/1001 (1 SELECT):
+  SELECT data FROM orders_dv WHERE data->'$._id' = 1001
+SQL for GET /orders/1001/relational (1 SELECT):
+  SELECT o.id, o.status, o.created_at, o.updated_at, c.id AS customer_id, c.name AS customer_name, c.email, i.id AS item_id, i.quantity, i.unit_price, p.id AS product_id, p.sku, p.name AS product_name FROM orders o JOIN customers c ON c.id = o.customer_id LEFT JOIN order_items i ON i.order_id = o.id LEFT JOIN products p ON p.id = i.product_id WHERE o.id = 1001 ORDER BY i.id
+SQL for GET /orders/1001/jpa (1 SELECT):
+  select oe1_0.id,oe1_0.created_at,oe1_0.customer_id,c1_0.id,c1_0.email,c1_0.name,i1_0.order_id,i1_0.id,i1_0.product_id,p1_0.id,p1_0.name,p1_0.sku,i1_0.quantity,i1_0.unit_price,oe1_0.status,oe1_0.updated_at from orders oe1_0 join customers c1_0 on c1_0.id=oe1_0.customer_id left join order_items i1_0 on oe1_0.id=i1_0.order_id left join products p1_0 on p1_0.id=i1_0.product_id where oe1_0.id=1001 order by i1_0.id
+SQL for GET /orders/1001/spring-data-jdbc (4 SELECT):
+  SELECT `orders`.`id` AS `id`, `orders`.`status` AS `status`, `orders`.`updated_at` AS `updated_at`, `orders`.`created_at` AS `created_at`, `orders`.`customer_id` AS `customer_id` FROM `orders` WHERE `orders`.`id` = 1001
+  SELECT `order_items`.`id` AS `id`, `order_items`.`quantity` AS `quantity`, `order_items`.`product_id` AS `product_id`, `order_items`.`unit_price` AS `unit_price` FROM `order_items` WHERE `order_items`.`order_id` = 1001
+  SELECT `customers`.`id` AS `id`, `customers`.`name` AS `name`, `customers`.`email` AS `email` FROM `customers` WHERE `customers`.`id` = 42
+  SELECT `products`.`id` AS `id`, `products`.`sku` AS `sku`, `products`.`name` AS `name`, `products`.`price` AS `price` FROM `products` WHERE `products`.`id` IN (501, 502)
+SELECT statements per order read: {duality view=1, relational=1, jpa=1, spring-data-jdbc=4}
+PASS orderReadPathsReturnTheSameOrderAndRecordTheirSql()
 PASS readOrderWithCustomerAndMultipleItems()
-Read-only customer field -> 6497 / HY000 / Missing UPDATE tag on `order_duality_it_e9da478cca404e52859f3d1f663fd72f`.`customers`.name, path '$.customer.name'.
+Read-only customer field -> 6497 / HY000 / Missing UPDATE tag on `order_duality_it_7f14f0d2bbfa4d0c9f67ff3e0bf61179`.`customers`.name, path '$.customer.name'.
 PASS readonlySharedFieldEditIsRejectedAtomically()
 PASS removingTheCollectionDeletesAllItsRows()
 EXPLAIN SELECT data FROM orders_dv WHERE data->'$._id'=1001
@@ -78,25 +91,25 @@ PASS selectExplainWorksButDmlExplainIsRejected()
 Concurrent writers: [committed, 6494 Cannot update JSON duality view. The ETAG of the document in the database did not match the ETAG '"a5dd9751812e07b5d33222d768ee2aec"' passed in.]
 PASS simultaneousWritersCannotBothWin()
 Stale document after UPDATE orders SET status='CANCELLED' WHERE id=1001 -> 6494 / HY000 / Cannot update JSON duality view. The ETAG of the document in the database did not match the ETAG '"a5dd9751812e07b5d33222d768ee2aec"' passed in.
-Stale document after UPDATE order_items SET quantity=quantity+1 WHERE id=9001 -> 6494 / HY000 / Cannot update JSON duality view. The ETAG of the document in the database did not match the ETAG '"d33f925025893feba38c0195d077c1e6"' passed in.
-Stale document after UPDATE customers SET name='Alice R.' WHERE id=42 -> 6494 / HY000 / Cannot update JSON duality view. The ETAG of the document in the database did not match the ETAG '"5f494531b72bcb3f22dcd8dd762efc78"' passed in.
-Stale document after UPDATE products SET name='Updated keyboard' WHERE id=501 -> 6494 / HY000 / Cannot update JSON duality view. The ETAG of the document in the database did not match the ETAG '"d982308c9dcd3e28239324d5c2ffbda7"' passed in.
+Stale document after UPDATE order_items SET quantity=quantity+1 WHERE id=9001 -> 6494 / HY000 / Cannot update JSON duality view. The ETAG of the document in the database did not match the ETAG '"0a0e025cc92f6be0b0b18444b6356f29"' passed in.
+Stale document after UPDATE customers SET name='Alice R.' WHERE id=42 -> 6494 / HY000 / Cannot update JSON duality view. The ETAG of the document in the database did not match the ETAG '"021dfe0ed483566f25f9e45ff7680e3d"' passed in.
+Stale document after UPDATE products SET name='Updated keyboard' WHERE id=501 -> 6494 / HY000 / Cannot update JSON duality view. The ETAG of the document in the database did not match the ETAG '"7fc52e87e436ce5e6dc74f552ede8e9a"' passed in.
 PASS staleDocumentDetectsRelationalAndSharedChanges()
-updatedAt after status update: "2026-09-23 19:22:54.715269"
+updatedAt after status update: "2026-09-23 22:33:11.903057"
 PASS statusUpdateChangesTheRelationalRow()
 PASS toolBoundaryAndMockUseActualViewData()
 PASS unprojectedCatalogPriceDoesNotInvalidateTheOrderEtag()
 Multi-root update -> 6482 / 0A000 / Multiple object update is not supported for JSON Duality Views.
 INSERT SELECT -> 6482 / 0A000 / INSERT... SELECT is not supported for JSON Duality Views.
 INSERT column list -> 6482 / 0A000 / Column list in INSERT is not supported for JSON Duality Views.
-Read-only view UPDATE -> 6497 / HY000 / Missing UPDATE tag on `order_duality_it_e9da478cca404e52859f3d1f663fd72f`.`customers`.name, path '$.name'.
+Read-only view UPDATE -> 6497 / HY000 / Missing UPDATE tag on `order_duality_it_7f14f0d2bbfa4d0c9f67ff3e0bf61179`.`customers`.name, path '$.name'.
 PASS unsupportedStatementForms()
 Root WHERE -> 6457 / HY000 / Invalid JSON duality view definition: WHERE clause is not supported with root object.
 Calculated value -> 6459 / HY000 / Invalid JSON duality view definition: JSON_DUALITY_OBJECT value must be either a table column or a sub-query. Object "total" contains an invalid value.
-Missing item PK -> 6469 / HY000 / Invalid JSON duality view definition: Primary key column of every table should be projected, object "items" that projects table "order_duality_it_e9da478cca404e52859f3d1f663fd72f.order_items" does not.
-Composite PK -> 6480 / HY000 / Invalid JSON duality view definition: Composite primary key is not supported. Object "Root Node" projecting "order_duality_it_e9da478cca404e52859f3d1f663fd72f.composite_probe" table violates the rule.
+Missing item PK -> 6469 / HY000 / Invalid JSON duality view definition: Primary key column of every table should be projected, object "items" that projects table "order_duality_it_7f14f0d2bbfa4d0c9f67ff3e0bf61179.order_items" does not.
+Composite PK -> 6480 / HY000 / Invalid JSON duality view definition: Composite primary key is not supported. Object "Root Node" projecting "order_duality_it_7f14f0d2bbfa4d0c9f67ff3e0bf61179.composite_probe" table violates the rule.
 PASS unsupportedViewShapes()
-UPDATE-only view INSERT -> 6490 / HY000 / Missing INSERT tag on table `order_duality_it_e9da478cca404e52859f3d1f663fd72f`.`orders`, path '$'.
-UPDATE-only view DELETE -> 6498 / HY000 / Missing DELETE tag on table `order_duality_it_e9da478cca404e52859f3d1f663fd72f`.`orders`, path '$'.
+UPDATE-only view INSERT -> 6490 / HY000 / Missing INSERT tag on table `order_duality_it_7f14f0d2bbfa4d0c9f67ff3e0bf61179`.`orders`, path '$'.
+UPDATE-only view DELETE -> 6498 / HY000 / Missing DELETE tag on table `order_duality_it_7f14f0d2bbfa4d0c9f67ff3e0bf61179`.`orders`, path '$'.
 WITH(UPDATE) alone: creation and update succeeded; insert and delete rejected
 PASS updateOnlyAnnotationIsAcceptedAndEnforced()
