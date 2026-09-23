@@ -1,12 +1,6 @@
 {
-  "startedAt" : "2026-09-23T15:58:36.521340Z",
-  "implementation" : "LangChain4j AiServices + @Tool",
-  "model" : {
-    "model" : "llama3.1:8b",
-    "digest" : "46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e",
-    "parameterSize" : "8.0B",
-    "quantization" : "Q4_K_M"
-  },
+  "startedAt" : "2026-09-23T19:22:18.221587Z",
+  "model" : "llama3.1:8b",
   "customerId" : 42,
   "question" : "Show me my recent orders and explain which ones are still pending.",
   "answer" : "Here are the recent orders with IDs and statuses:\n\n1. 1003; PENDING\n2. 1001; PROCESSING\n3. 1002; SHIPPED (closed, not pending)\n\nThere are no cancelled orders in this result set.\n\nNote: Order 1002 is closed because its status is \"SHIPPED\", which means it's no longer open.",

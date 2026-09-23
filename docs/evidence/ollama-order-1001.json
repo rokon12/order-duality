@@ -1,12 +1,6 @@
 {
-  "startedAt" : "2026-09-23T15:57:23.444110Z",
-  "implementation" : "LangChain4j AiServices + @Tool",
-  "model" : {
-    "model" : "llama3.1:8b",
-    "digest" : "46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e",
-    "parameterSize" : "8.0B",
-    "quantization" : "Q4_K_M"
-  },
+  "startedAt" : "2026-09-23T19:21:07.385970Z",
+  "model" : "llama3.1:8b",
   "customerId" : 42,
   "question" : "What is in my order 1001? Include item quantities and unit prices.",
   "answer" : "Order 1001 contains the following items:\n\n1. Mechanical Keyboard; quantity: 2; unitPrice: 149\n2. Wireless Mouse; quantity: 1; unitPrice: 49.5\n\nStatus of order 1001 is PROCESSING.",
