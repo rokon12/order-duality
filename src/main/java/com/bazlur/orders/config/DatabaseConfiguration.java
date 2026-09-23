@@ -8,6 +8,8 @@ import com.bazlur.orders.persistence.OrderDocumentRepository;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +20,8 @@ import org.springframework.context.annotation.Primary;
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(DatabaseProperties.class)
 public class DatabaseConfiguration {
+    private static final Logger LOG = LoggerFactory.getLogger(DatabaseConfiguration.class);
+
     // Each account gets its own pool; Spring closes them on shutdown. The API pool is the default DataSource.
     @Bean(destroyMethod = "close") @Primary
     HikariDataSource apiPool(DatabaseProperties properties) {
@@ -45,7 +49,7 @@ public class DatabaseConfiguration {
             try (var connection = dataSource.getConnection(); var statement = connection.createStatement();
                  var rows = statement.executeQuery("SELECT VERSION(), @@version_comment")) {
                 rows.next();
-                IO.println("MySQL %s — %s".formatted(rows.getString(1), rows.getString(2)));
+                LOG.info("MySQL {} — {}", rows.getString(1), rows.getString(2));
             }
         };
     }
