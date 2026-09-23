@@ -1,0 +1,8 @@
+Command: mvn -B -ntp clean verify -Pintegration,ollama
+Java: Temurin 25.0.1; Spring Boot 4.1.1; LangChain4j 1.20.0; Jackson 3.1.5; HikariCP 7.0.2
+MySQL: 9.7.2 Community; Ollama: 0.32.9 (native); model: llama3.1:8b
+
+
+22 unit tests + 30 MySQL/HTTP integration tests + 3 real Ollama cases.
+These checks verify tool selection and selected facts, not every natural-language claim.
+See ollama-answer-review.md for manual review and preserved earlier failures.

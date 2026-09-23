@@ -1,0 +1,33 @@
+Rerun of selectExplainWorksButDmlExplainIsRejected() during article verification.
+Command: mvn -B -ntp verify -Pintegration (Ollama tests excluded); 20 unit + 30 integration tests passed.
+Run: 2026-09-23T12:01:06.551662Z
+Server: 9.7.2 | MySQL Community Server - GPL | ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION | REPEATABLE-READ
+Java: 26-ea
+
+Compare with experiments.txt: order lines here use the items_order index; the earlier capture scanned order_items.
+The root table scan and materialization appear in both runs.
+
+EXPLAIN SELECT data FROM orders_dv WHERE data->'$._id'=1001
+EXPLAIN=-> Filter: (json_extract(orders_dv.`data`,'$._id') = 1001)  (cost=3.18 rows=6)
+    -> Table scan on orders_dv  (cost=2.66..4.81 rows=6)
+        -> Materialize  (cost=2.23..2.23 rows=6)
+            -> Table scan on o  (cost=0.85 rows=6)
+            -> Select #5 (subquery in projection; dependent)
+                -> Single-row index lookup on c using PRIMARY (id = o.customer_id)  (cost=0.35 rows=1)
+            -> Select #3 (subquery in projection; dependent)
+                -> Aggregate: json_arrayagg(json_duality_object( WITH (INSERT,UPDATE,DELETE) 'id':i.id,'quantity':i.quantity,'unitPrice':i.unit_price,'product':(select #4)))  (cost=0.726 rows=1)
+                    -> Index lookup on i using items_order (order_id = o.id)  (cost=0.438 rows=1.25)
+                -> Select #4 (subquery in projection; dependent)
+                    -> Single-row index lookup on p using PRIMARY (id = i.product_id)  (cost=0.35 rows=1)
+ 
+
+EXPLAIN SELECT o.id,c.name,i.quantity,p.sku FROM orders o JOIN customers c ON c.id=o.customer_id LEFT JOIN order_items i ON i.order_id=o.id LEFT JOIN products p ON p.id=i.product_id WHERE o.id=1001
+EXPLAIN=-> Nested loop left join  (cost=1.4 rows=2)
+    -> Nested loop left join  (cost=0.7 rows=2)
+        -> Rows fetched before execution  (cost=0..0 rows=1)
+        -> Index lookup on i using items_order (order_id = 1001)  (cost=0.7 rows=2)
+    -> Single-row index lookup on p using PRIMARY (id = i.product_id)  (cost=0.3 rows=1)
+ 
+
+EXPLAIN UPDATE -> 6482 / 0A000 / EXPLAIN for INSERT/UPDATE/DELETE is not supported for JSON Duality Views.
+PASS selectExplainWorksButDmlExplainIsRejected()

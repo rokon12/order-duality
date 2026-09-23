@@ -1,0 +1,51 @@
+{
+  "startedAt" : "2026-09-22T15:07:53.689221Z",
+  "model" : {
+    "model" : "llama3.1:8b",
+    "digest" : "46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e",
+    "ollamaVersion" : "0.32.9",
+    "parameterSize" : "8.0B",
+    "quantization" : "Q4_K_M"
+  },
+  "customerId" : 42,
+  "question" : "Show me my recent orders and explain which ones are still pending.",
+  "answer" : "Based on the tool results, your recent orders are:\n\n1. Order ID 1003 - PENDING\n2. Order ID 1002 - SHIPPED\n3. Order ID 1001 - SHIPPED\n\nThe order with ID 1003 is still pending, while orders 1002 and 1001 have been shipped.",
+  "tools" : [ {
+    "name" : "getCustomerOrders",
+    "arguments" : {
+      "customerId" : 42
+    },
+    "result" : {
+      "_id" : 42,
+      "name" : "Alice Rahman",
+      "orders" : [ {
+        "id" : 1002,
+        "status" : "SHIPPED",
+        "createdAt" : "2026-09-10 14:15:00.000000"
+      }, {
+        "id" : 1001,
+        "status" : "SHIPPED",
+        "createdAt" : "2026-09-18 09:30:00.000000"
+      }, {
+        "id" : 1003,
+        "status" : "PENDING",
+        "createdAt" : "2026-09-20 11:45:00.000000"
+      } ],
+      "_metadata" : {
+        "etag" : "e5534b460d66109a4102082d3b3243ac"
+      }
+    },
+    "successful" : true
+  } ],
+  "usage" : [ {
+    "round" : 1,
+    "promptTokens" : 454,
+    "outputTokens" : 18,
+    "totalNanos" : 17640559667
+  }, {
+    "round" : 2,
+    "promptTokens" : 411,
+    "outputTokens" : 71,
+    "totalNanos" : 26386514375
+  } ]
+}

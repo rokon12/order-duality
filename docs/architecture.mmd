@@ -1,0 +1,20 @@
+flowchart TB
+    model[Ollama container / llama3.1:8b]
+    model <-->|Tool calls / JSON results over Compose network| api
+    api[Java 25 / Spring Boot REST / LangChain4j read-only tools]
+    baseline[Conventional JDBC + records + Jackson]
+    subgraph mysql[MySQL 9.7.2 Community / InnoDB]
+      dv[orders_dv / customer_orders_dv]
+      customers[customers]
+      orders[orders]
+      items[order_items]
+      products[products]
+      customers -->|1:n| orders
+      orders -->|1:n| items
+      products -->|1:n| items
+      dv --- customers
+      dv --- orders
+      dv --- items
+    end
+    api <-->|JSON via JDBC; etag on writes| dv
+    baseline -.->|one joined SELECT| orders

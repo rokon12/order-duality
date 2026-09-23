@@ -1,0 +1,15 @@
+Command: API_PORT=8088 docker compose run --rm --build tests
+Docker Engine 29.8.0; Compose 5.5.1; linux/arm64
+Build/test: Maven 3.9.11, Temurin 25.0.1; app runtime: Temurin 25.0.4+7
+MySQL 9.7.2 Community; Ollama 0.32.9; llama3.1:8b; CPU inference
+
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.171 s -- in com.bazlur.orders.json.JsonTest
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.835 s -- in com.bazlur.orders.ai.OllamaAgentTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.bazlur.orders.ai.AgentDemoTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.bazlur.orders.application.OrderServiceTest
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 33, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 186.1 s -- in com.bazlur.orders.integration.DualityIT
+[INFO] Tests run: 33, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[INFO] Total time:  03:13 min
+[INFO] Finished at: 2026-09-22T16:56:32Z

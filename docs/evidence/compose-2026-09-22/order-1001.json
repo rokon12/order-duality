@@ -1,0 +1,33 @@
+{
+  "_id" : 1001,
+  "items" : [ {
+    "id" : 9001,
+    "product" : {
+      "id" : 501,
+      "sku" : "KB-001",
+      "name" : "Mechanical Keyboard"
+    },
+    "quantity" : 2,
+    "unitPrice" : 149
+  }, {
+    "id" : 9002,
+    "product" : {
+      "id" : 502,
+      "sku" : "MS-002",
+      "name" : "Wireless Mouse"
+    },
+    "quantity" : 1,
+    "unitPrice" : 49.5
+  } ],
+  "status" : "PROCESSING",
+  "customer" : {
+    "id" : 42,
+    "name" : "Alice Rahman",
+    "email" : "alice@example.com"
+  },
+  "_metadata" : {
+    "etag" : "a5dd9751812e07b5d33222d768ee2aec"
+  },
+  "createdAt" : "2026-09-18 09:30:00.000000",
+  "updatedAt" : "2026-09-18 10:00:00.000000"
+}

@@ -1,0 +1,16 @@
+# Untraced CLI run, September 23, 2026, about five minutes before agent-cli.txt.
+# Same image, same live database state, same question. Copied from terminal output
+# with Spring/Hikari INFO log lines removed; no trace file was written for this run.
+
+$ docker compose run --rm app --agent --customer-id=42 \
+    --question="Show me my recent orders and explain which ones are still pending."
+Asking local Ollama for customer 42...
+Model: llama3.1:8b | digest 46e0c10c039e
+Tool: getCustomerOrders({"customerId":42})
+
+Here are the recent orders with only PENDING and PROCESSING statuses:
+
+1. 1003; status: PENDING
+2. No other open orders found.
+
+Note that there are no PROCESSING orders in this result set, only one order is still pending.

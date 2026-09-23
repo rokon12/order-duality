@@ -1,0 +1,64 @@
+{
+  "startedAt" : "2026-09-22T15:33:31.040001Z",
+  "model" : {
+    "model" : "llama3.1:8b",
+    "digest" : "46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e",
+    "ollamaVersion" : "0.32.9",
+    "parameterSize" : "8.0B",
+    "quantization" : "Q4_K_M"
+  },
+  "customerId" : 42,
+  "question" : "What is in my order 1001? Include item quantities and unit prices.",
+  "answer" : "Order 1001 contains:\n\n* 2 x Mechanical Keyboard (KB-001): 149.00 (currency unspecified)\n* 1 x Wireless Mouse (MS-002): 49.50 (currency unspecified)\n\nStatus: SHIPPED",
+  "tools" : [ {
+    "name" : "getOrder",
+    "arguments" : {
+      "orderId" : 1001
+    },
+    "result" : {
+      "_id" : 1001,
+      "items" : [ {
+        "id" : 9001,
+        "product" : {
+          "id" : 501,
+          "sku" : "KB-001",
+          "name" : "Mechanical Keyboard"
+        },
+        "quantity" : 2,
+        "unitPrice" : 149
+      }, {
+        "id" : 9002,
+        "product" : {
+          "id" : 502,
+          "sku" : "MS-002",
+          "name" : "Wireless Mouse"
+        },
+        "quantity" : 1,
+        "unitPrice" : 49.5
+      } ],
+      "status" : "SHIPPED",
+      "customer" : {
+        "id" : 42,
+        "name" : "Alice Rahman",
+        "email" : "alice@example.com"
+      },
+      "_metadata" : {
+        "etag" : "7b0cd2ef610692833bad454d40a46325"
+      },
+      "createdAt" : "2026-09-18 09:30:00.000000",
+      "updatedAt" : "2026-09-22 14:56:49.487504"
+    },
+    "successful" : true
+  } ],
+  "usage" : [ {
+    "round" : 1,
+    "promptTokens" : 565,
+    "outputTokens" : 18,
+    "totalNanos" : 5885355667
+  }, {
+    "round" : 2,
+    "promptTokens" : 579,
+    "outputTokens" : 50,
+    "totalNanos" : 19110270084
+  } ]
+}

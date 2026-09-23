@@ -1,0 +1,18 @@
+Command: API_PORT=8088 docker compose run --rm --build tests
+Docker Engine 29.8.0; Compose 5.5.1; linux/arm64
+Build/test: Maven 3.9.11, Temurin 25.0.1; app runtime: Temurin 25.0.4
+MySQL 9.7.2 Community; Ollama 0.32.9; llama3.1:8b; CPU inference; Jackson 3.1.5; HikariCP 7.0.2
+All Ollama traffic through LangChain4j 1.20.0 (no direct HTTP client)
+
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.204 s -- in com.bazlur.orders.json.JsonTest
+[INFO] Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.798 s -- in com.bazlur.orders.ai.OllamaAgentTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.bazlur.orders.ai.MockAgentTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.bazlur.orders.application.OrderServiceTest
+[INFO] Tests run: 22, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 33, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 149.3 s -- in com.bazlur.orders.integration.DualityIT
+[INFO] Tests run: 33, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[INFO] Total time:  02:36 min
+[INFO] Finished at: 2026-09-23T16:14:38Z
+
+Smoke test (API_URL=http://127.0.0.1:8088 scripts/smoke.sh): PASS: GET, PUT, stale PUT (409), relational endpoint, customer tool projection

@@ -1,0 +1,64 @@
+{
+  "startedAt" : "2026-09-22T15:24:56.444251Z",
+  "model" : {
+    "model" : "mistral-nemo:latest",
+    "digest" : "e7e06d107c6c86ed0cf45445f1790720b5092149c4c95f4d965844e9afbfdc89",
+    "ollamaVersion" : "0.32.9",
+    "parameterSize" : "12.2B",
+    "quantization" : "Q4_0"
+  },
+  "customerId" : 42,
+  "question" : "What is in my order 1001? Include item quantities and unit prices.",
+  "answer" : "**Order #1001**\n\n**Customer:** Alice Rahman (alice@example.com)\n\n**Status:** PROCESSING\n\n**Items:**\n\n1. **Mechanical Keyboard**\n   - Quantity: 2\n   - Unit Price: $149.00\n   - Total Price: $298.00\n\n2. **Wireless Mouse**\n   - Quantity: 1\n   - Unit Price: $49.50\n   - Total Price: $49.50",
+  "tools" : [ {
+    "name" : "getOrder",
+    "arguments" : {
+      "orderId" : 1001
+    },
+    "result" : {
+      "_id" : 1001,
+      "items" : [ {
+        "id" : 9001,
+        "product" : {
+          "id" : 501,
+          "sku" : "KB-001",
+          "name" : "Mechanical Keyboard"
+        },
+        "quantity" : 2,
+        "unitPrice" : 149
+      }, {
+        "id" : 9002,
+        "product" : {
+          "id" : 502,
+          "sku" : "MS-002",
+          "name" : "Wireless Mouse"
+        },
+        "quantity" : 1,
+        "unitPrice" : 49.5
+      } ],
+      "status" : "PROCESSING",
+      "customer" : {
+        "id" : 42,
+        "name" : "Alice Rahman",
+        "email" : "alice@example.com"
+      },
+      "_metadata" : {
+        "etag" : "a5dd9751812e07b5d33222d768ee2aec"
+      },
+      "createdAt" : "2026-09-18 09:30:00.000000",
+      "updatedAt" : "2026-09-18 10:00:00.000000"
+    },
+    "successful" : true
+  } ],
+  "usage" : [ {
+    "round" : 1,
+    "promptTokens" : 493,
+    "outputTokens" : 22,
+    "totalNanos" : 31907395917
+  }, {
+    "round" : 2,
+    "promptTokens" : 311,
+    "outputTokens" : 107,
+    "totalNanos" : 41049824208
+  } ]
+}

@@ -1,0 +1,35 @@
+{
+  "startedAt" : "2026-09-22T15:11:14.917075Z",
+  "model" : {
+    "model" : "llama3.1:8b",
+    "digest" : "46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e",
+    "ollamaVersion" : "0.32.9",
+    "parameterSize" : "8.0B",
+    "quantization" : "Q4_K_M"
+  },
+  "customerId" : 42,
+  "question" : "What is in my order 1001? Include item quantities and unit prices.",
+  "answer" : "The tool call returned an error because the `orderId` is not a valid number. I cannot provide information about order 1001 as it does not exist or has an invalid ID.",
+  "tools" : [ {
+    "name" : "getOrder",
+    "arguments" : {
+      "orderId" : "1001"
+    },
+    "result" : {
+      "status" : 400,
+      "error" : "Expected exactly one positive integer argument: orderId"
+    },
+    "successful" : false
+  } ],
+  "usage" : [ {
+    "round" : 1,
+    "promptTokens" : 457,
+    "outputTokens" : 18,
+    "totalNanos" : 5865493416
+  }, {
+    "round" : 2,
+    "promptTokens" : 282,
+    "outputTokens" : 38,
+    "totalNanos" : 12013437917
+  } ]
+}

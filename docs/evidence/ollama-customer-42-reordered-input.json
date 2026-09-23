@@ -1,0 +1,53 @@
+{
+  "startedAt" : "2026-09-23T13:03:25.707346Z",
+  "implementation" : "LangChain4j AiServices + @Tool",
+  "model" : {
+    "model" : "llama3.1:8b",
+    "digest" : "46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e",
+    "ollamaVersion" : "0.32.9",
+    "parameterSize" : "8.0B",
+    "quantization" : "Q4_K_M",
+    "supportsThinking" : false
+  },
+  "customerId" : 42,
+  "question" : "Show me my recent orders and explain which ones are still pending.",
+  "answer" : "Here are the recent orders, sorted by createdAt descending:\n\n1. Order 1003; status: PENDING\n   - Created at: 2026-09-20 11:45:00.000000\n\n2. Order 1002; status: SHIPPED (closed)\n   - Created at: 2026-09-10 14:15:00.000000\n\n3. Order 1001; status: PROCESSING\n   - Created at: 2026-09-18 09:30:00.000000",
+  "tools" : [ {
+    "name" : "getCustomerOrders",
+    "arguments" : {
+      "customerId" : 42
+    },
+    "result" : {
+      "_id" : 42,
+      "name" : "Alice Rahman",
+      "orders" : [ {
+        "id" : 1002,
+        "status" : "SHIPPED",
+        "createdAt" : "2026-09-10 14:15:00.000000"
+      }, {
+        "id" : 1001,
+        "status" : "PROCESSING",
+        "createdAt" : "2026-09-18 09:30:00.000000"
+      }, {
+        "id" : 1003,
+        "status" : "PENDING",
+        "createdAt" : "2026-09-20 11:45:00.000000"
+      } ],
+      "_metadata" : {
+        "etag" : "16ff2527784084e64945de972e8b0afc"
+      }
+    },
+    "successful" : true
+  } ],
+  "usage" : [ {
+    "stage" : "fetch",
+    "promptTokens" : 348,
+    "outputTokens" : 18,
+    "elapsedMillis" : 6027
+  }, {
+    "stage" : "explain",
+    "promptTokens" : 376,
+    "outputTokens" : 116,
+    "elapsedMillis" : 40477
+  } ]
+}

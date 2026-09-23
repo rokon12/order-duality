@@ -1,0 +1,65 @@
+{
+  "startedAt" : "2026-09-22T16:29:38.731073Z",
+  "implementation" : "LangChain4j AiServices + @Tool",
+  "model" : {
+    "model" : "llama3.1:8b",
+    "digest" : "46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e",
+    "ollamaVersion" : "0.32.9",
+    "parameterSize" : "8.0B",
+    "quantization" : "Q4_K_M"
+  },
+  "customerId" : 42,
+  "question" : "What is in my order 1001? Include item quantities and unit prices.",
+  "answer" : "Order ID: 1001\nStatus: PROCESSING\n\nItems:\n- KB-001 Mechanical Keyboard (2 x $149) \n- MS-002 Wireless Mouse (1 x $49.50)",
+  "tools" : [ {
+    "name" : "getOrder",
+    "arguments" : {
+      "orderId" : 1001
+    },
+    "result" : {
+      "_id" : 1001,
+      "items" : [ {
+        "id" : 9001,
+        "product" : {
+          "id" : 501,
+          "sku" : "KB-001",
+          "name" : "Mechanical Keyboard"
+        },
+        "quantity" : 2,
+        "unitPrice" : 149
+      }, {
+        "id" : 9002,
+        "product" : {
+          "id" : 502,
+          "sku" : "MS-002",
+          "name" : "Wireless Mouse"
+        },
+        "quantity" : 1,
+        "unitPrice" : 49.5
+      } ],
+      "status" : "PROCESSING",
+      "customer" : {
+        "id" : 42,
+        "name" : "Alice Rahman",
+        "email" : "alice@example.com"
+      },
+      "_metadata" : {
+        "etag" : "a5dd9751812e07b5d33222d768ee2aec"
+      },
+      "createdAt" : "2026-09-18 09:30:00.000000",
+      "updatedAt" : "2026-09-18 10:00:00.000000"
+    },
+    "successful" : true
+  } ],
+  "usage" : [ {
+    "stage" : "fetch",
+    "promptTokens" : 351,
+    "outputTokens" : 18,
+    "elapsedMillis" : 26004
+  }, {
+    "stage" : "explain",
+    "promptTokens" : 378,
+    "outputTokens" : 42,
+    "elapsedMillis" : 33257
+  } ]
+}

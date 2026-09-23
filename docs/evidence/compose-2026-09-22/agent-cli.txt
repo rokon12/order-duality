@@ -1,0 +1,27 @@
+ Container order-duality-mysql-1 Running 
+ Container order-duality-ollama-1 Running 
+ Container order-duality-ollama-1 Waiting 
+ Container order-duality-ollama-1 Healthy 
+ Container order-duality-ollama-init-1 Starting 
+ Container order-duality-ollama-init-1 Started 
+ Container order-duality-ollama-init-1 Waiting 
+ Container order-duality-mysql-1 Waiting 
+ Container order-duality-ollama-init-1 Exited 
+ Container order-duality-mysql-1 Healthy 
+ Container order-duality-app-run-8e0e3ac88f85 Creating 
+ Container order-duality-app-run-8e0e3ac88f85 Created 
+2026-09-22T16:58:00.969Z  INFO 1 --- [order-duality] [           main] com.bazlur.orders.OrdersApplication      : Starting OrdersApplication v1.0.0 using Java 25.0.4 with PID 1 (/app/order-duality.jar started by app in /app)
+2026-09-22T16:58:00.971Z  INFO 1 --- [order-duality] [           main] com.bazlur.orders.OrdersApplication      : The following 1 profile is active: "agent"
+2026-09-22T16:58:01.425Z  INFO 1 --- [order-duality] [           main] com.bazlur.orders.OrdersApplication      : Started OrdersApplication in 0.688 seconds (process running for 0.945)
+Asking local Ollama for customer 42...
+Model: llama3.1:8b | Ollama 0.32.9
+Tool: getCustomerOrders({"customerId":42})
+
+Here are the recent orders with IDs and statuses:
+
+1. 1003; PENDING
+2. 1002; SHIPPED
+3. 1001; SHIPPED
+
+There are only three orders, and none of them are PROCESSING.
+MySQL 9.7.2 — MySQL Community Server - GPL

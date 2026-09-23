@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1200" viewBox="0 0 1440 1200" role="img" aria-labelledby="title desc">
+  <title id="title">Order Duality: one relational model, two application boundaries</title>
+  <desc id="desc">A local Ollama model exchanges tool calls and results with LangChain4j in a Java 25 Spring Boot application. The REST API and read-only agent tools use JDBC to access MySQL JSON Duality Views. The views project normalized customers, orders, order_items, and products tables. A conventional JDBC mapper queries those same tables. Status writes use the document etag and a database transaction.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8" fill="none" stroke="#526371" stroke-width="1.5"/></marker>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #173040; }
+      .title { font-size: 35px; font-weight: 650; }
+      .subtitle { font-size: 20px; fill: #526371; }
+      .heading { font-size: 24px; font-weight: 650; }
+      .body { font-size: 19px; }
+      .small { font-size: 17px; fill: #526371; }
+      .mono { font-family: 'SF Mono', Consolas, monospace; font-size: 21px; font-weight: 600; }
+      .line { fill: none; stroke: #526371; stroke-width: 2; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1440" height="1200" fill="#fbfaf7"/>
+  <text x="65" y="66" class="title">One database. Two application boundaries.</text>
+  <text x="65" y="102" class="subtitle">Order management · Java 25 · Spring Boot 4.1.1 · MySQL 9.7.2 Community</text>
+
+  <rect x="65" y="137" width="610" height="135" rx="14" fill="#eeeaf4" stroke="#8a76a7" stroke-width="1.5"/>
+  <text x="95" y="176" class="heading">Ollama container · llama3.1:8b</text>
+  <text x="95" y="210" class="body">Selects tools and explains their results</text>
+  <text x="95" y="243" class="small">Persistent model volume · cloud disabled</text>
+  <path d="M450 277 V312" class="line" marker-start="url(#arrow)"/>
+  <text x="485" y="300" class="small">Compose network · tool calls / JSON</text>
+  <text x="735" y="177" class="heading">LangChain4j calls scoped Java tools</text>
+  <text x="735" y="211" class="body">Customer scope + argument validation</text>
+  <text x="735" y="244" class="body">SELECT-only agent database account</text>
+  <g transform="translate(0,175)">
+  <rect x="65" y="145" width="770" height="151" rx="14" fill="#e7f1ef" stroke="#4a8278" stroke-width="1.5"/>
+  <text x="95" y="184" class="heading">Spring Boot REST / LangChain4j tools</text>
+  <text x="95" y="218" class="body">GET /orders/{id} · PUT /orders/{id}</text>
+  <text x="95" y="251" class="body">getOrder / getCustomerOrders → document tools</text>
+  <text x="95" y="279" class="small">Status validation in Java · model-facing tools are read-only</text>
+
+  <rect x="975" y="145" width="400" height="151" rx="14" fill="#eef0f3" stroke="#80909e" stroke-width="1.5"/>
+  <text x="1000" y="184" class="heading">Conventional Java path</text>
+  <text x="1000" y="221" class="body">One SQL join → ResultSet</text>
+  <text x="1000" y="254" class="body">→ records / DTOs → Jackson</text>
+
+  <path d="M450 301 V365" class="line" marker-start="url(#arrow)"/>
+  <text x="475" y="329" class="body">JSON over JDBC</text>
+  <text x="475" y="354" class="small">PUT preserves _metadata.etag</text>
+
+  <rect x="45" y="376" width="1350" height="555" rx="18" fill="#ffffff" stroke="#c8d2d6" stroke-width="1.5"/>
+  <text x="74" y="410" class="small">MYSQL · INNODB · NO STORED ORDER JSON</text>
+  <rect x="90" y="435" width="745" height="135" rx="12" fill="#e7f1ef" stroke="#4a8278" stroke-width="1.5"/>
+  <text x="118" y="473" class="heading">JSON Duality Views</text>
+  <text x="118" y="508" class="body">orders_dv: order + customer + items + products</text>
+  <text x="118" y="540" class="body">customer_orders_dv: customer + order summaries</text>
+  <rect x="892" y="435" width="460" height="135" rx="12" fill="#faf4e9" stroke="#c4a575"/>
+  <text x="916" y="472" class="heading">Write boundaries</text>
+  <text x="916" y="507" class="body">Order + lines: annotated for DML</text>
+  <text x="916" y="539" class="body">Customer + product: read-only</text>
+
+  <path d="M260 574 V626 H227 V675" class="line"/>
+  <path d="M460 574 V675" class="line"/>
+  <path d="M660 574 V626 H790 V675" class="line"/>
+  <text x="889" y="625" class="small">PKs · FKs · UNIQUE · CHECK</text>
+  <text x="889" y="651" class="small">Atomic DML + timestamp trigger</text>
+
+  <rect x="90" y="685" width="245" height="95" rx="10" fill="#f4f6f7" stroke="#8a9aa5"/>
+  <text x="116" y="723" class="mono">customers</text><text x="116" y="752" class="small">id · name · email</text>
+  <rect x="410" y="685" width="245" height="95" rx="10" fill="#f4f6f7" stroke="#8a9aa5"/>
+  <text x="436" y="723" class="mono">orders</text><text x="436" y="752" class="small">id · customer_id · status</text>
+  <rect x="730" y="685" width="270" height="95" rx="10" fill="#f4f6f7" stroke="#8a9aa5"/>
+  <text x="756" y="723" class="mono">order_items</text><text x="756" y="752" class="small">order_id · product_id</text>
+  <rect x="730" y="822" width="270" height="82" rx="10" fill="#f4f6f7" stroke="#8a9aa5"/>
+  <text x="756" y="856" class="mono">products</text><text x="756" y="883" class="small">id · sku · name · price</text>
+  <path d="M338 729 H403" class="line"/>
+  <text x="355" y="715" class="small">1:n</text>
+  <path d="M658 729 H723" class="line"/>
+  <text x="674" y="715" class="small">1:n</text>
+  <path d="M865 819 V785" class="line"/>
+  <text x="883" y="807" class="small">1:n</text>
+  <path d="M1175 300 V354 H1370 V861 H1008" class="line" stroke-dasharray="7 5"/>
+  <text x="1050" y="899" class="small">Direct relational access</text>
+  <text x="90" y="844" class="body">The tables remain authoritative.</text>
+  <text x="90" y="875" class="small">Purchase price lives on order_items.</text>
+  <text x="90" y="901" class="small">Shared catalog data stays in products.</text>
+  <text x="65" y="971" class="small">Document assembly moves into MySQL. Business policy, authorization and query-plan review still belong to the application team.</text>
+  </g>
+</svg>

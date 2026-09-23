@@ -1,0 +1,117 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.fusesource.jansi.internal.JansiLoader in an unnamed module (file:~/.sdkman/candidates/maven/current/lib/jansi-2.4.0.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by com.google.common.util.concurrent.AbstractFuture$UnsafeAtomicHelper (file:~/.sdkman/candidates/maven/current/lib/guava-32.0.1-jre.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.common.util.concurrent.AbstractFuture$UnsafeAtomicHelper
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< com.bazlur:order-duality >----------------------
+[INFO] Building Order Duality 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ order-duality ---
+[INFO] Deleting ~/projects/ace/target
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ order-duality ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ order-duality ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 19 source files with javac [debug parameters release 25] to target/classes
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ order-duality ---
+[INFO] skip non existing resourceDirectory ~/projects/ace/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ order-duality ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 3 source files with javac [debug parameters release 25] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ order-duality ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.bazlur.orders.ai.OllamaAgentTest
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.601 s -- in com.bazlur.orders.ai.OllamaAgentTest
+[INFO] Running com.bazlur.orders.application.OrderServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.bazlur.orders.application.OrderServiceTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.1:jar (default-jar) @ order-duality ---
+[INFO] Building jar: ~/projects/ace/target/order-duality.jar
+[INFO] 
+[INFO] --- spring-boot:4.1.1:repackage (repackage) @ order-duality ---
+[INFO] Replacing main artifact ~/projects/ace/target/order-duality.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to ~/projects/ace/target/order-duality.jar.original
+[INFO] 
+[INFO] --- failsafe:3.5.4:integration-test (default) @ order-duality ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.bazlur.orders.integration.DualityIT
+2026-09-22T12:29:37.482-04:00  INFO 68416 --- [order-duality] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.5.4 using Java 25.0.1 with PID 68416 (started by bazlur in ~/projects/ace)
+2026-09-22T12:29:37.484-04:00  INFO 68416 --- [order-duality] [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
+2026-09-22T12:29:37.894-04:00  INFO 68416 --- [order-duality] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 0 (http)
+2026-09-22T12:29:37.902-04:00  INFO 68416 --- [order-duality] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-09-22T12:29:37.902-04:00  INFO 68416 --- [order-duality] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.24]
+2026-09-22T12:29:37.919-04:00  INFO 68416 --- [order-duality] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 416 ms
+2026-09-22T12:29:38.139-04:00  INFO 68416 --- [order-duality] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 55938 (http) with context path '/'
+2026-09-22T12:29:38.142-04:00  INFO 68416 --- [order-duality] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 0.817 seconds (process running for 1.943)
+MySQL 9.7.2 — MySQL Community Server - GPL
+2026-09-22T12:29:38.190-04:00  INFO 68416 --- [order-duality] [omcat-handler-0] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-09-22T12:29:38.190-04:00  INFO 68416 --- [order-duality] [omcat-handler-0] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-09-22T12:29:38.191-04:00  INFO 68416 --- [order-duality] [omcat-handler-0] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-09-22T12:29:38.310-04:00  WARN 68416 --- [order-duality] [omcat-handler-6] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'DELETE' is not supported]
+2026-09-22T12:29:38.318-04:00  WARN 68416 --- [order-duality] [omcat-handler-7] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.web.HttpMediaTypeNotSupportedException: Content-Type is not supported]
+2026-09-22T12:29:38.351-04:00  INFO 68416 --- [order-duality] [           main] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-09-22T12:29:38.353-04:00  INFO 68416 --- [order-duality] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+[ERROR] Tests run: 33, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 144.6 s <<< FAILURE! -- in com.bazlur.orders.integration.DualityIT
+[ERROR] com.bazlur.orders.integration.DualityIT.ollamaChoosesOrderDetailToolAndUsesPurchasePrices -- Time elapsed: 59.34 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: The schema does not specify currency ==> expected: <false> but was: <true>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:158)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:139)
+	at org.junit.jupiter.api.AssertFalse.failNotFalse(AssertFalse.java:69)
+	at org.junit.jupiter.api.AssertFalse.assertFalse(AssertFalse.java:41)
+	at org.junit.jupiter.api.Assertions.assertFalse(Assertions.java:255)
+	at com.bazlur.orders.integration.DualityIT.ollamaChoosesOrderDetailToolAndUsesPurchasePrices(DualityIT.java:510)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   DualityIT.ollamaChoosesOrderDetailToolAndUsesPurchasePrices:510 The schema does not specify currency ==> expected: <false> but was: <true>
+[INFO] 
+[ERROR] Tests run: 33, Failures: 1, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- failsafe:3.5.4:verify (default) @ order-duality ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  02:29 min
+[INFO] Finished at: 2026-09-22T12:32:01-04:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-failsafe-plugin:3.5.4:verify (default) on project order-duality: There are test failures.
+[ERROR] 
+[ERROR] See ~/projects/ace/target/failsafe-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

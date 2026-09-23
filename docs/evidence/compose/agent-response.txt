@@ -1,0 +1,4 @@
+Alice Rahman — recent orders:
+#1003: pending: not yet being processed
+#1001: still open: being prepared, not shipped
+#1002: shipped; delivery is not confirmed by this data

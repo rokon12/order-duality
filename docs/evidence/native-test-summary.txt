@@ -1,0 +1,13 @@
+Command: mvn -B -ntp clean verify -Pintegration,ollama
+Model: llama3.1:8b (local Ollama 0.32.9)
+
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.376 s -- in com.bazlur.orders.OllamaAgentTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in com.bazlur.orders.OrderServiceTest
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 33, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 114.1 s -- in com.bazlur.orders.DualityIT
+[INFO] Tests run: 33, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[INFO] Finished at: 2026-09-22T11:30:31-04:00
+
+These tests check tool selection and selected answer fields, not every natural-language claim.
+See ollama-answer-review.md for the manual quality review, including a wrong conclusion in the history answer.

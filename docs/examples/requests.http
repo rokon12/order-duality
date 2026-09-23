@@ -1,0 +1,20 @@
+### Complete document. Save this response, including _metadata.etag, before PUT.
+GET http://127.0.0.1:8080/orders/1001
+
+### Conventional JDBC/DTO path
+GET http://127.0.0.1:8080/orders/1001/relational
+
+### Read-only tool projection
+GET http://127.0.0.1:8080/customers/42/orders
+
+### Empty items are null in the database document
+GET http://127.0.0.1:8080/orders/1005
+
+### Missing order -> 404
+GET http://127.0.0.1:8080/orders/9999
+
+### Missing etag -> 428
+PUT http://127.0.0.1:8080/orders/1001
+Content-Type: application/json
+
+{"_id":1001,"status":"SHIPPED"}
