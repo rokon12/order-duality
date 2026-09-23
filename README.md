@@ -8,6 +8,41 @@ Read the [lab notes](docs/lab-notes.md) for what happened along the way, or the 
 
 ![Architecture: Java document consumers and conventional relational access over the same MySQL tables](docs/architecture.svg)
 
+## Quick start
+
+With Docker running, run these commands in order.
+
+1. Get the code:
+
+   ```bash
+   git clone https://github.com/rokon12/order-duality.git && cd order-duality
+   ```
+
+2. Start MySQL, Ollama and the API:
+
+   ```bash
+   docker compose up --build -d --wait
+   ```
+
+3. Read an order through the duality view:
+
+   ```bash
+   curl -s http://127.0.0.1:8080/orders/1001 | jq
+   ```
+
+4. Ask the local AI assistant (one command; the `\` continues it onto the next line):
+
+   ```bash
+   docker compose run --rm app --agent --customer-id=42 \
+     --question="Show me my recent orders and explain which ones are still pending."
+   ```
+
+Step 2 starts MySQL 9.7.2, Ollama and the Java API, and returns only when everything is ready. On first run it also downloads the `llama3.1:8b` model (about 4.9 GB), which takes a while. Give Docker around 12 GB of memory. The `curl` line uses `jq` to pretty-print the JSON; drop `| jq` if you don't have it.
+
+If port 8080 is already taken on your machine, start with `API_PORT=8088 docker compose up --build -d --wait` and use port 8088 in the `curl` commands. The agent command doesn't need the port.
+
+The sections below cover [the Compose setup in detail](#run-everything-with-docker-compose), [the API](#read-an-order), [the local model](#ask-a-local-model-through-ollama) and [the full test suite](#run-all-experiments).
+
 ## What is actually demonstrated
 
 - A writable order document with a customer object, multiple order lines and nested product objects.
