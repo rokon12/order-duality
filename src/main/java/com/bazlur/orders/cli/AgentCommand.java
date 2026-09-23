@@ -27,7 +27,7 @@ public record AgentCommand(OllamaAgent agent, AgentOrderReader reader, Environme
         String question = option(args, "question", "Show me my recent orders and explain which ones are still pending.");
         LOG.info("Asking local Ollama for customer {}...", customerId);
         var result = agent.answer(customerId, question);
-        LOG.info("Model: {} | digest {}", result.model().model(), result.model().digest().substring(0, 12));
+        LOG.info("Model: {}", result.model());
         for (var call : result.tools()) LOG.info("Tool: {}({})", call.name(), call.arguments());
         LOG.info("Answer:\n{}", result.answer());
         String trace = option(args, "trace-file", environment.getProperty("OLLAMA_TRACE_FILE", ""));

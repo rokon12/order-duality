@@ -4,6 +4,8 @@ import com.bazlur.orders.json.Json;
 import module java.base;
 
 import tools.jackson.databind.JsonNode;
+import dev.langchain4j.invocation.InvocationParameters;
+import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.output.FinishReason;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.Result;
@@ -21,7 +23,8 @@ public final class OllamaAgent {
                 Use JSON integer IDs. If arguments are invalid, correct them and retry.
                 Only access this customer's orders. You cannot ship, cancel, refund or modify orders.
                 """)
-        Result<String> fetch(@V("customerId") long customerId, @UserMessage String question);
+        // The parameters reach the tools and hooks but are never shown to the model.
+        Result<String> fetch(@V("customerId") long customerId, @UserMessage String question, InvocationParameters parameters);
     }
 
     interface OrderExplainer {
@@ -52,7 +55,7 @@ public final class OllamaAgent {
 
     public record ToolExchange(String name, JsonNode arguments, JsonNode result, boolean successful) {}
     public record StageUsage(String stage, Integer promptTokens, Integer outputTokens) {}
-    public record Run(Instant startedAt, OllamaRuntime.ModelInfo model, long customerId, String question,
+    public record Run(Instant startedAt, String model, long customerId, String question,
                       String answer, List<ToolExchange> tools, List<StageUsage> usage) {
         public Run { tools = List.copyOf(tools); usage = List.copyOf(usage); }
 
@@ -62,27 +65,27 @@ public final class OllamaAgent {
         }
     }
 
-    private final OllamaRuntime runtime;
-    private final AgentOrderReader reader;
+    private static final String TOOL_OUTPUT_CHARACTERS = "toolOutputCharacters";
 
-    public OllamaAgent(OllamaRuntime runtime, AgentOrderReader reader) {
-        this.runtime = runtime;
-        this.reader = reader;
+    private final String modelName;
+    private final OrderReader fetcher;
+    private final OrderExplainer explainer;
+
+    // Both AI services are built once. Per-question state (the customer scope and the output budget)
+    // travels in InvocationParameters instead of in a per-question service.
+    public OllamaAgent(ChatModel model, String modelName, AgentOrderReader reader) {
+        this.modelName = modelName;
+        this.fetcher = buildFetcher(model, reader);
+        this.explainer = AiServices.builder(OrderExplainer.class).chatModel(model).build();
     }
 
-    public Run answer(long customerId, String question) throws IOException {
-        if (customerId <= 0 || question.isBlank() || question.length() > 2000) {
-            throw new IllegalArgumentException("Use a positive customer ID and a question of 1–2000 characters");
-        }
-        var started = Instant.now();
-        var modelInfo = runtime.inspect();
-        var model = runtime.chatModel();
-        var characters = new AtomicInteger();
-        var fetcher = AiServices.builder(OrderReader.class).chatModel(model)
-                .tools(new CustomerOrderTools(customerId, reader))
+    private static OrderReader buildFetcher(ChatModel model, AgentOrderReader reader) {
+        return AiServices.builder(OrderReader.class).chatModel(model)
+                .tools(new CustomerOrderTools(reader))
                 .maxToolCallingRoundTrips(3)
                 // LangChain4j limits rounds but not output size, so cap what reaches the explainer.
                 .afterToolExecution(execution -> {
+                    AtomicInteger characters = execution.invocationContext().invocationParameters().get(TOOL_OUTPUT_CHARACTERS);
                     if (characters.addAndGet(execution.result().length()) > 20_000) {
                         throw new IllegalStateException("Order data exceeds this demo's context budget; use a bounded projection");
                     }
@@ -94,8 +97,17 @@ public final class OllamaAgent {
                     throw new IllegalStateException("Order tool failed", error);
                 })
                 .build();
+    }
 
-        var fetched = fetcher.fetch(customerId, question);
+    public Run answer(long customerId, String question) throws IOException {
+        if (customerId <= 0 || question.isBlank() || question.length() > 2000) {
+            throw new IllegalArgumentException("Use a positive customer ID and a question of 1–2000 characters");
+        }
+        var started = Instant.now();
+        var parameters = new InvocationParameters(Map.of(
+                CustomerOrderTools.CUSTOMER_ID, customerId,
+                TOOL_OUTPUT_CHARACTERS, new AtomicInteger()));
+        var fetched = fetcher.fetch(customerId, question, parameters);
         var usage = new ArrayList<StageUsage>();
         usage.add(tokensUsed("fetch", fetched));
         requireComplete(fetched);
@@ -108,12 +120,11 @@ public final class OllamaAgent {
             throw new IOException("Model answered without a successful order tool call");
         }
 
-        var explainer = AiServices.builder(OrderExplainer.class).chatModel(model).build();
         var explained = explainer.explain(customerId, question, Json.encode(exchanges));
         usage.add(tokensUsed("explain", explained));
         requireComplete(explained);
         if (explained.content() == null || explained.content().isBlank()) throw new IOException("Model returned an empty answer");
-        return new Run(started, modelInfo, customerId, question, explained.content(), exchanges, usage);
+        return new Run(started, modelName, customerId, question, explained.content(), exchanges, usage);
     }
 
     private static StageUsage tokensUsed(String stage, Result<?> result) {

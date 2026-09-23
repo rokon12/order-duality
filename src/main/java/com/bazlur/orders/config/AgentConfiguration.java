@@ -2,7 +2,6 @@ package com.bazlur.orders.config;
 
 import com.bazlur.orders.ai.AgentOrderReader;
 import com.bazlur.orders.ai.OllamaAgent;
-import com.bazlur.orders.ai.OllamaRuntime;
 import com.bazlur.orders.persistence.OrderDocumentRepository;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -20,10 +19,7 @@ public class AgentConfiguration {
     }
 
     @Bean
-    OllamaRuntime ollamaRuntime(OllamaProperties properties) {
-        return new OllamaRuntime(properties.baseUrl(), properties.model(), properties.timeout());
+    OllamaAgent ollamaAgent(OllamaProperties properties, AgentOrderReader reader) {
+        return new OllamaAgent(properties.chatModel(), properties.model(), reader);
     }
-
-    @Bean
-    OllamaAgent ollamaAgent(OllamaRuntime runtime, AgentOrderReader reader) { return new OllamaAgent(runtime, reader); }
 }

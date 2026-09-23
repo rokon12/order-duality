@@ -3,8 +3,9 @@ package com.bazlur.orders.integration;
 import com.bazlur.orders.ai.MockAgent;
 import com.bazlur.orders.ai.AgentOrderReader;
 import com.bazlur.orders.ai.CustomerOrderTools;
+import dev.langchain4j.invocation.InvocationParameters;
 import com.bazlur.orders.ai.OllamaAgent;
-import com.bazlur.orders.ai.OllamaRuntime;
+import com.bazlur.orders.config.OllamaProperties;
 import com.bazlur.orders.OrdersApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import com.bazlur.orders.application.OrderException;
@@ -502,11 +503,13 @@ class DualityIT {
     }
 
     @Test void agentToolsEnforceCustomerScopeAndReadOnlyDatabaseGrants() throws Exception {
-        var tools = scopedTools(42);
-        assertEquals(42, Json.parse(tools.getCustomerOrders(42)).path("_id").asInt());
-        assertEquals(1001, Json.parse(tools.getOrder(1001)).path("_id").asInt());
-        assertEquals(NOT_FOUND, assertThrows(OrderException.class, () -> tools.getOrder(1004)).kind());
-        assertEquals(NOT_FOUND, assertThrows(OrderException.class, () -> tools.getCustomerOrders(43)).kind());
+        var tools = new CustomerOrderTools(new AgentOrderReader(new OrderDocumentRepository(agentDb)));
+        var alice = InvocationParameters.from("customerId", 42L);
+        assertEquals(42, Json.parse(tools.getCustomerOrders(42, alice)).path("_id").asInt());
+        assertEquals(1001, Json.parse(tools.getOrder(1001, alice)).path("_id").asInt());
+        assertEquals(NOT_FOUND, assertThrows(OrderException.class, () -> tools.getOrder(1004, alice)).kind());
+        assertEquals(NOT_FOUND, assertThrows(OrderException.class, () -> tools.getCustomerOrders(43, alice)).kind());
+        assertThrows(IllegalStateException.class, () -> tools.getOrder(1001, new InvocationParameters()));
         try (var c = agentDb.getConnection(); var s = c.createStatement()) {
             assertEquals(1142, rejected("Agent account base-table read", () -> s.executeQuery("SELECT * FROM orders")).getErrorCode());
             assertEquals(1142, rejected("Agent account document update", () ->
@@ -542,16 +545,13 @@ class DualityIT {
                 || answer.contains("don't have any orders") || answer.contains("do not have any orders"), run.answer());
     }
 
-    private CustomerOrderTools scopedTools(long customerId) {
-        return new CustomerOrderTools(customerId, new AgentOrderReader(new OrderDocumentRepository(agentDb)));
-    }
-
     private OllamaAgent.Run askLocalModel(long customerId, String question, String trace) throws Exception {
-        var runtime = new OllamaRuntime(URI.create(env("OLLAMA_BASE_URL", "http://127.0.0.1:11434")),
+        var ollama = new OllamaProperties(URI.create(env("OLLAMA_BASE_URL", "http://127.0.0.1:11434")),
                 env("OLLAMA_MODEL", "llama3.1:8b"), Duration.ofSeconds(Long.parseLong(env("OLLAMA_TIMEOUT_SECONDS", "120"))));
-        var run = new OllamaAgent(runtime, new AgentOrderReader(new OrderDocumentRepository(agentDb))).answer(customerId, question);
+        var agent = new OllamaAgent(ollama.chatModel(), ollama.model(), new AgentOrderReader(new OrderDocumentRepository(agentDb)));
+        var run = agent.answer(customerId, question);
         run.writeTrace(Path.of("target/evidence", trace));
-        evidence.add("Ollama | " + run.model().model() + " | " + run.model().digest()
+        evidence.add("Ollama | " + run.model()
                 + " | calls=" + run.tools().stream().map(OllamaAgent.ToolExchange::name).toList() + " | " + trace);
         return run;
     }

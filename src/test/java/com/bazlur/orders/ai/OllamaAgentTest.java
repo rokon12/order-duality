@@ -1,6 +1,7 @@
 package com.bazlur.orders.ai;
 
 import com.bazlur.orders.application.OrderException;
+import com.bazlur.orders.config.OllamaProperties;
 import com.bazlur.orders.json.Json;
 import com.bazlur.orders.persistence.OrderDocumentRepository;
 import module java.base;
@@ -14,16 +15,13 @@ import static com.bazlur.orders.application.OrderException.Kind.*;
 /** Exercises real LangChain4j dispatch and HTTP serialization against a local Ollama stub. */
 class OllamaAgentTest {
     private HttpServer server;
-    private OllamaRuntime runtime;
+    private OllamaAgent agent;
     private final Queue<String> replies = new ArrayDeque<>();
     private final List<JsonNode> requests = new CopyOnWriteArrayList<>();
     private final List<Long> orderReads = new ArrayList<>();
     private final List<Long> historyReads = new ArrayList<>();
     private String history = "{\"_id\":42,\"orders\":[{\"id\":1003,\"status\":\"PENDING\"}]}";
     private String order = "{\"_id\":1001,\"customer\":{\"id\":42},\"status\":\"PROCESSING\"}";
-    private String show = """
-            {"capabilities":["completion","tools"],"details":{"parameter_size":"8B","quantization_level":"Q4_K_M"}}
-            """;
     private int chatStatus = 200;
 
     // The overridden methods never open a connection, so there is no data source.
@@ -38,8 +36,6 @@ class OllamaAgentTest {
             try (exchange) {
                 String path = exchange.getRequestURI().getPath();
                 String reply = switch (path) {
-                    case "/api/show" -> show;
-                    case "/api/tags" -> "{\"models\":[{\"name\":\"test:8b\",\"digest\":\"test-digest\"}]}";
                     case "/api/chat" -> {
                         requests.add(Json.parse(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8)));
                         yield replies.isEmpty() ? "{}" : replies.remove();
@@ -53,12 +49,13 @@ class OllamaAgentTest {
             }
         });
         server.start();
-        runtime = new OllamaRuntime(URI.create("http://127.0.0.1:" + server.getAddress().getPort()), "test:8b", Duration.ofSeconds(5));
+        var ollama = new OllamaProperties(URI.create("http://127.0.0.1:" + server.getAddress().getPort()), "test:8b", Duration.ofSeconds(5));
+        agent = new OllamaAgent(ollama.chatModel(), ollama.model(), data);
     }
 
     @AfterEach void stop() { server.stop(0); }
 
-    private OllamaAgent.Run ask() throws Exception { return new OllamaAgent(runtime, data).answer(42, "Which orders are pending?"); }
+    private OllamaAgent.Run ask() throws Exception { return agent.answer(42, "Which orders are pending?"); }
 
     private static String call(String name, String arguments) {
         return """
@@ -80,7 +77,7 @@ class OllamaAgentTest {
         var run = ask();
         assertEquals(List.of(42L), historyReads);
         assertEquals("Order 1003 is pending.", run.answer());
-        assertEquals("test-digest", run.model().digest());
+        assertEquals("test:8b", run.model());
         assertEquals(Json.parse(history), run.tools().getFirst().result());
         assertEquals(2, requests.size());
         assertTrue(requests.getLast().at("/messages/1/content").asString().contains(history));
@@ -196,25 +193,6 @@ class OllamaAgentTest {
         chatStatus = 503;
         assertThrows(RuntimeException.class, this::ask);
         assertEquals(1, requests.size());
-    }
-
-    @Test void rejectsCloudModelsAndModelsWithoutTools() {
-        var local = URI.create("http://127.0.0.1:11434");
-        for (String cloud : List.of("gpt-oss:120b-cloud", "qwen3-coder:480b-cloud", "some-model:cloud")) {
-            assertTrue(assertThrows(IllegalArgumentException.class, () -> new OllamaRuntime(local, cloud, Duration.ofSeconds(1)))
-                    .getMessage().contains("locally installed"), cloud);
-        }
-        assertDoesNotThrow(() -> new OllamaRuntime(local, "cloudy-model:8b", Duration.ofSeconds(1)));
-        show = "{\"capabilities\":[\"completion\"]}";
-        assertTrue(assertThrows(IOException.class, runtime::inspect).getMessage().contains("tool calling"));
-    }
-
-    @Test void acceptsComposeServiceAndRejectsRemoteOrigins() {
-        assertDoesNotThrow(() -> new OllamaRuntime(URI.create("http://ollama:11434"), "test:8b", Duration.ofSeconds(1)));
-        for (String url : List.of("https://ollama.com", "http://example.com:11434", "http://ollama.example.com:11434",
-                "http://localhost:11434/other", "http://u:p@localhost:11434", "http:/missing-host")) {
-            assertThrows(IllegalArgumentException.class, () -> new OllamaRuntime(URI.create(url), "test:8b", Duration.ofSeconds(1)));
-        }
     }
 
     @Test void reportsTruncatedGeneration() {
