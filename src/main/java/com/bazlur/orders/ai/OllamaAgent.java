@@ -58,13 +58,7 @@ public final class OllamaAgent {
 
         public void writeTrace(Path path) throws IOException {
             Files.createDirectories(path.toAbsolutePath().getParent());
-            var output = Json.MAPPER.createObjectNode().put("startedAt", startedAt.toString())
-                    .put("implementation", "LangChain4j AiServices + @Tool");
-            output.set("model", Json.MAPPER.valueToTree(model));
-            output.put("customerId", customerId).put("question", question).put("answer", answer);
-            output.set("tools", Json.MAPPER.valueToTree(tools));
-            output.set("usage", Json.MAPPER.valueToTree(usage));
-            Files.writeString(path, Json.MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(output) + "\n");
+            Files.writeString(path, Json.MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(this) + "\n");
         }
     }
 

@@ -10,7 +10,6 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import com.bazlur.orders.application.OrderException;
 import com.bazlur.orders.json.Json;
 import com.bazlur.orders.persistence.ConventionalOrderRepository;
-import com.bazlur.orders.persistence.Database;
 import com.bazlur.orders.persistence.OrderDocumentRepository;
 import module java.base;
 import module java.sql;
@@ -30,19 +29,19 @@ import static com.bazlur.orders.application.OrderException.Kind.*;
 class DualityIT {
     // Tests connect without a pool so each step sees exactly one connection per open().
     private record Login(String url, String user, String password) {
-        Database database() {
+        DataSource dataSource() {
             var source = new MysqlDataSource();
             source.setURL(url);
             source.setUser(user);
             source.setPassword(password);
-            return new Database(source);
+            return source;
         }
     }
 
     private static Login root, api, agent;
-    private static Database db;
-    private static Database apiDb;
-    private static Database agentDb;
+    private static DataSource db;
+    private static DataSource apiDb;
+    private static DataSource agentDb;
     private static OrderDocumentRepository repository;
     private static String schema;
     private static String version;
@@ -57,8 +56,8 @@ class DualityIT {
         schema = "order_duality_it_" + UUID.randomUUID().toString().replace("-", "");
         root = new Login(env("TEST_DB_URL", "jdbc:mysql://127.0.0.1:3307/?sslMode=DISABLED&allowPublicKeyRetrieval=true&connectionTimeZone=UTC"),
                 env("TEST_DB_USER", "root"), env("TEST_DB_PASSWORD", "local-root-only"));
-        db = root.database();
-        try (var c = db.open()) {
+        db = root.dataSource();
+        try (var c = db.getConnection()) {
             try (var s = c.createStatement(); var rs = s.executeQuery("SELECT VERSION(), @@version_comment, @@sql_mode, @@transaction_isolation")) {
                 rs.next();
                 version = rs.getString(1) + " | " + rs.getString(2) + " | " + rs.getString(3) + " | " + rs.getString(4);
@@ -73,27 +72,27 @@ class DualityIT {
         String base = q < 0 ? url : url.substring(0, q);
         String properties = q < 0 ? "" : url.substring(q);
         root = new Login(base.substring(0, base.lastIndexOf('/') + 1) + schema + properties, root.user(), root.password());
-        db = root.database();
+        db = root.dataSource();
         repository = new OrderDocumentRepository(db);
-        try (var c = db.open(); var s = c.createStatement()) {
+        try (var c = db.getConnection(); var s = c.createStatement()) {
             // Use the same least-privilege grants as the real application, in an isolated account.
             String grants = Files.readString(Path.of("sql/users.sql")).replace("order_demo", schema)
                     .replace("order_api", schema.substring(0, 30)).replaceAll("(?m)^\\s*--.*$", "");
             for (String part : grants.split(";")) if (!part.isBlank()) s.execute(part);
         }
         api = new Login(root.url(), schema.substring(0, 30), "local-api-only");
-        apiDb = api.database();
-        try (var c = db.open(); var s = c.createStatement()) {
+        apiDb = api.dataSource();
+        try (var c = db.getConnection(); var s = c.createStatement()) {
             String grants = Files.readString(Path.of("sql/agent-user.sql")).replace("order_demo", schema)
                     .replace("order_agent", schema.substring(0, 29) + "_a").replaceAll("(?m)^\\s*--.*$", "");
             for (String part : grants.split(";")) if (!part.isBlank()) s.execute(part);
         }
         agent = new Login(root.url(), schema.substring(0, 29) + "_a", "local-agent-only");
-        agentDb = agent.database();
+        agentDb = agent.dataSource();
     }
 
     @BeforeEach void seed() throws Exception {
-        try (var c = db.open(); var s = c.createStatement()) {
+        try (var c = db.getConnection(); var s = c.createStatement()) {
             s.executeUpdate("DELETE FROM order_items");
             s.executeUpdate("DELETE FROM orders");
             s.executeUpdate("DELETE FROM products");
@@ -107,7 +106,7 @@ class DualityIT {
         Files.writeString(Path.of("target/evidence/experiments.txt"),
                 "Run: " + java.time.Instant.now() + "\nServer: " + version + "\nJava: " + System.getProperty("java.version")
                 + "\n\n" + String.join("\n", evidence) + "\n");
-        if (db != null && schema != null) try (var c = db.open(); var s = c.createStatement()) {
+        if (db != null && schema != null) try (var c = db.getConnection(); var s = c.createStatement()) {
             s.execute("DROP USER IF EXISTS '" + schema.substring(0, 30) + "'@'%'");
             s.execute("DROP USER IF EXISTS '" + schema.substring(0, 29) + "_a'@'%'");
             s.execute("DROP DATABASE IF EXISTS " + schema);
@@ -125,11 +124,11 @@ class DualityIT {
 
     private ObjectNode order(long id) throws Exception { return (ObjectNode) Json.parse(repository.getOrder(id).orElseThrow()); }
     private int replace(long id, JsonNode document) throws Exception {
-        try (var c = db.open()) { return repository.replace(c, id, document.toString()); }
+        try (var c = db.getConnection()) { return repository.replace(c, id, document.toString()); }
     }
-    private void sql(String sql) throws Exception { try (var c = db.open(); var s = c.createStatement()) { s.execute(sql); } }
+    private void sql(String sql) throws Exception { try (var c = db.getConnection(); var s = c.createStatement()) { s.execute(sql); } }
     private String scalar(String sql) throws Exception {
-        try (var c = db.open(); var s = c.createStatement(); var rs = s.executeQuery(sql)) { assertTrue(rs.next()); return rs.getString(1); }
+        try (var c = db.getConnection(); var s = c.createStatement(); var rs = s.executeQuery(sql)) { assertTrue(rs.next()); return rs.getString(1); }
     }
     private SQLException rejected(String label, org.junit.jupiter.api.function.Executable action) {
         SQLException e = assertThrows(SQLException.class, action);
@@ -216,7 +215,7 @@ class DualityIT {
         o.remove("_metadata");
         ((ObjectNode) o.path("items").get(0)).put("id", 9010);
         ((ObjectNode) o.path("items").get(1)).put("id", 9011);
-        try (var c = db.open(); var s = c.prepareStatement("INSERT INTO orders_dv VALUES (?)")) {
+        try (var c = db.getConnection(); var s = c.prepareStatement("INSERT INTO orders_dv VALUES (?)")) {
             s.setString(1, o.toString()); s.executeUpdate();
         }
         assertEquals("42", scalar("SELECT customer_id FROM orders WHERE id=1010"));
@@ -230,7 +229,7 @@ class DualityIT {
 
     @Test void invalidJsonAndUnknownFieldsAreRejected() throws Exception {
         var before = order(1001);
-        rejected("Malformed JSON", () -> { try (var c = db.open()) { repository.replace(c, 1001, "{broken"); } });
+        rejected("Malformed JSON", () -> { try (var c = db.getConnection()) { repository.replace(c, 1001, "{broken"); } });
         rejected("Unmapped key", () -> replace(1001, before.deepCopy().put("discount", 10)));
         var wrongType = before.deepCopy();
         wrongType.set("status", Json.MAPPER.createObjectNode());
@@ -310,7 +309,7 @@ class DualityIT {
     }
 
     private String writeAtGate(JsonNode document, CountDownLatch gate) throws Exception {
-        try (var c = db.open()) {
+        try (var c = db.getConnection()) {
             gate.await();
             try { repository.replace(c, 1001, document.toString()); return "committed"; }
             catch (SQLException e) { return e.getErrorCode() + " " + e.getMessage(); }
@@ -356,7 +355,7 @@ class DualityIT {
 
     @Test void explicitTransactionRollbackUndoesDocumentWrite() throws Exception {
         var before = order(1001);
-        try (var c = db.open()) {
+        try (var c = db.getConnection()) {
             c.setAutoCommit(false);
             repository.replace(c, 1001, before.deepCopy().put("status", "SHIPPED").toString());
             assertEquals("SHIPPED", Json.parse(repository.getOrder(c, 1001).orElseThrow()).path("status").asString());
@@ -376,7 +375,7 @@ class DualityIT {
     @Test void selectExplainWorksButDmlExplainIsRejected() throws Exception {
         for (String statement : List.of("EXPLAIN SELECT data FROM orders_dv WHERE data->'$._id'=1001",
                 "EXPLAIN SELECT o.id,c.name,i.quantity,p.sku FROM orders o JOIN customers c ON c.id=o.customer_id LEFT JOIN order_items i ON i.order_id=o.id LEFT JOIN products p ON p.id=i.product_id WHERE o.id=1001")) {
-            try (var c = db.open(); var s = c.createStatement(); var rs = s.executeQuery(statement)) {
+            try (var c = db.getConnection(); var s = c.createStatement(); var rs = s.executeQuery(statement)) {
                 var out = new StringBuilder(statement).append('\n');
                 while (rs.next()) {
                     for (int i=1;i<=rs.getMetaData().getColumnCount();i++) out.append(rs.getMetaData().getColumnLabel(i)).append('=').append(rs.getString(i)).append(' ');
@@ -420,14 +419,14 @@ class DualityIT {
     }
 
     @Test void applicationAccountCannotWriteBaseTablesOrInsertOrders() throws Exception {
-        try (var c = apiDb.open(); var s = c.createStatement()) {
+        try (var c = apiDb.getConnection(); var s = c.createStatement()) {
             assertEquals(1142, rejected("API base-table write", () -> s.executeUpdate("UPDATE orders SET status='SHIPPED' WHERE id=1001")).getErrorCode());
             assertEquals(1142, rejected("API view INSERT", () -> s.executeUpdate("INSERT INTO orders_dv VALUES ('{\"_id\":1010}')")).getErrorCode());
         }
     }
 
     @Test void jsonColumnCopyDoesNotTrackRelationalChanges() throws Exception {
-        try (var c = db.open(); var s = c.createStatement()) {
+        try (var c = db.getConnection(); var s = c.createStatement()) {
             s.execute("CREATE TEMPORARY TABLE document_copy (id BIGINT PRIMARY KEY, body JSON NOT NULL)");
             s.executeUpdate("INSERT INTO document_copy SELECT 1001,data FROM orders_dv WHERE data->'$._id'=1001");
             s.executeUpdate("UPDATE customers SET name='Alice R.' WHERE id=42");
@@ -508,7 +507,7 @@ class DualityIT {
         assertEquals(1001, Json.parse(tools.getOrder(1001)).path("_id").asInt());
         assertEquals(NOT_FOUND, assertThrows(OrderException.class, () -> tools.getOrder(1004)).kind());
         assertEquals(NOT_FOUND, assertThrows(OrderException.class, () -> tools.getCustomerOrders(43)).kind());
-        try (var c = agentDb.open(); var s = c.createStatement()) {
+        try (var c = agentDb.getConnection(); var s = c.createStatement()) {
             assertEquals(1142, rejected("Agent account base-table read", () -> s.executeQuery("SELECT * FROM orders")).getErrorCode());
             assertEquals(1142, rejected("Agent account document update", () ->
                     s.executeUpdate("UPDATE orders_dv SET data=JSON_SET(data,'$.status','SHIPPED') WHERE data->'$._id'=1001")).getErrorCode());

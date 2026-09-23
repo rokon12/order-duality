@@ -7,10 +7,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 // One query, not N+1 queries. The baseline deserves the same care as the new path.
 public final class ConventionalOrderRepository {
-    private final Database database;
+    private final DataSource dataSource;
 
-    public ConventionalOrderRepository(Database database) {
-        this.database = database;
+    public ConventionalOrderRepository(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     public Optional<Order> getOrder(long id) throws SQLException {
@@ -24,7 +24,7 @@ public final class ConventionalOrderRepository {
                 LEFT JOIN products p ON p.id = i.product_id
                 WHERE o.id = ? ORDER BY i.id
                 """;
-        try (var connection = database.open(); var statement = connection.prepareStatement(sql)) {
+        try (var connection = dataSource.getConnection(); var statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
             try (var rows = statement.executeQuery()) {
                 if (!rows.next()) return Optional.empty();

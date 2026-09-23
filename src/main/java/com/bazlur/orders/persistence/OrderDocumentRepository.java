@@ -4,14 +4,14 @@ import module java.base;
 import module java.sql;
 
 public final class OrderDocumentRepository {
-    private final Database database;
+    private final DataSource dataSource;
 
-    public OrderDocumentRepository(Database database) {
-        this.database = database;
+    public OrderDocumentRepository(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     public Optional<String> getOrder(long id) throws SQLException {
-        try (var connection = database.open()) {
+        try (var connection = dataSource.getConnection()) {
             return getOrder(connection, id);
         }
     }
@@ -27,7 +27,7 @@ public final class OrderDocumentRepository {
     }
 
     public Optional<String> getCustomerOrders(long customerId) throws SQLException {
-        try (var connection = database.open(); var statement = connection.prepareStatement(
+        try (var connection = dataSource.getConnection(); var statement = connection.prepareStatement(
                 "SELECT data FROM customer_orders_dv WHERE data->'$._id' = ?")) {
             statement.setLong(1, customerId);
             try (var rows = statement.executeQuery()) {

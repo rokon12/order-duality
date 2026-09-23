@@ -1,7 +1,6 @@
 package com.bazlur.orders.application;
 
 import com.bazlur.orders.json.Json;
-import com.bazlur.orders.persistence.Database;
 import com.bazlur.orders.persistence.OrderDocumentRepository;
 import module java.base;
 import module java.sql;
@@ -15,11 +14,11 @@ import static com.bazlur.orders.application.OrderException.Kind.*;
 public final class OrderService {
     private static final Pattern ETAG = Pattern.compile("[0-9a-fA-F]{32}");
 
-    private final Database database;
+    private final DataSource dataSource;
     private final OrderDocumentRepository repository;
 
-    public OrderService(Database database, OrderDocumentRepository repository) {
-        this.database = database;
+    public OrderService(DataSource dataSource, OrderDocumentRepository repository) {
+        this.dataSource = dataSource;
         this.repository = repository;
     }
 
@@ -32,7 +31,7 @@ public final class OrderService {
             throw new OrderException(INVALID_REQUEST, "Malformed JSON");
         }
         var requested = validateEnvelope(id, incoming);
-        try (var connection = database.open()) {
+        try (var connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             try {
                 var current = Json.parse(repository.getOrder(connection, id)

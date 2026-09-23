@@ -4,11 +4,10 @@ import module java.base;
 
 import com.bazlur.orders.application.OrderService;
 import com.bazlur.orders.persistence.ConventionalOrderRepository;
-import com.bazlur.orders.persistence.Database;
 import com.bazlur.orders.persistence.OrderDocumentRepository;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.springframework.beans.factory.annotation.Qualifier;
+import javax.sql.DataSource;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -19,8 +18,8 @@ import org.springframework.context.annotation.Primary;
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(DatabaseProperties.class)
 public class DatabaseConfiguration {
-    // Each account gets its own pool; Spring closes them on shutdown.
-    @Bean(destroyMethod = "close")
+    // Each account gets its own pool; Spring closes them on shutdown. The API pool is the default DataSource.
+    @Bean(destroyMethod = "close") @Primary
     HikariDataSource apiPool(DatabaseProperties properties) {
         return pool("orders-api", properties.url(), properties.user(), properties.password(), properties.poolSize(), false);
     }
@@ -31,25 +30,19 @@ public class DatabaseConfiguration {
         return pool("orders-agent", properties.url(), properties.agentUser(), properties.agentPassword(), properties.agentPoolSize(), true);
     }
 
-    @Bean @Primary
-    Database apiDatabase(@Qualifier("apiPool") HikariDataSource pool) { return new Database(pool); }
+    @Bean
+    OrderDocumentRepository orderDocumentRepository(DataSource dataSource) { return new OrderDocumentRepository(dataSource); }
 
     @Bean
-    Database agentDatabase(@Qualifier("agentPool") HikariDataSource pool) { return new Database(pool); }
+    ConventionalOrderRepository conventionalOrderRepository(DataSource dataSource) { return new ConventionalOrderRepository(dataSource); }
 
     @Bean
-    OrderDocumentRepository orderDocumentRepository(Database database) { return new OrderDocumentRepository(database); }
+    OrderService orderService(DataSource dataSource, OrderDocumentRepository repository) { return new OrderService(dataSource, repository); }
 
     @Bean
-    ConventionalOrderRepository conventionalOrderRepository(Database database) { return new ConventionalOrderRepository(database); }
-
-    @Bean
-    OrderService orderService(Database database, OrderDocumentRepository repository) { return new OrderService(database, repository); }
-
-    @Bean
-    ApplicationRunner reportDatabaseVersion(Database database) {
+    ApplicationRunner reportDatabaseVersion(DataSource dataSource) {
         return _ -> {
-            try (var connection = database.open(); var statement = connection.createStatement();
+            try (var connection = dataSource.getConnection(); var statement = connection.createStatement();
                  var rows = statement.executeQuery("SELECT VERSION(), @@version_comment")) {
                 rows.next();
                 IO.println("MySQL %s — %s".formatted(rows.getString(1), rows.getString(2)));

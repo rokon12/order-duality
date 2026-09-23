@@ -2,7 +2,6 @@ package com.bazlur.orders.ai;
 
 import com.bazlur.orders.application.OrderException;
 import com.bazlur.orders.json.Json;
-import com.bazlur.orders.persistence.Database;
 import com.bazlur.orders.persistence.OrderDocumentRepository;
 import module java.base;
 import module jdk.httpserver;
@@ -28,7 +27,7 @@ class OllamaAgentTest {
     private int chatStatus = 200;
 
     // The overridden methods never open a connection, so there is no data source.
-    private final AgentOrderReader data = new AgentOrderReader(new OrderDocumentRepository(new Database(null))) {
+    private final AgentOrderReader data = new AgentOrderReader(new OrderDocumentRepository(null)) {
         @Override public String getOrder(long id) { orderReads.add(id); return order; }
         @Override public String getCustomerOrders(long id) { historyReads.add(id); return history; }
     };
