@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-parent</artifactId><version>4.1.1</version>
+    <relativePath/>
+  </parent>
+  <groupId>com.bazlur</groupId>
+  <artifactId>order-duality</artifactId>
+  <version>1.0.0</version>
+  <name>Order Duality</name>
+  <description>A tested Java/MySQL JSON Duality View case study</description>
+  <properties>
+    <maven.compiler.release>25</maven.compiler.release>
+    <java.version>25</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <excludedTestGroups>ollama</excludedTestGroups>
+    <langchain4j.version>1.20.0</langchain4j.version>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-webmvc</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>dev.langchain4j</groupId><artifactId>langchain4j</artifactId><version>${langchain4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>dev.langchain4j</groupId><artifactId>langchain4j-ollama</artifactId><version>${langchain4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.mysql</groupId><artifactId>mysql-connector-j</artifactId><version>9.7.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.zaxxer</groupId><artifactId>HikariCP</artifactId>
+    </dependency>
+    <dependency>
+      <!-- Jackson 3, as managed by Spring Boot 4. LangChain4j brings its own Jackson 2 internally. -->
+      <groupId>tools.jackson.core</groupId><artifactId>jackson-databind</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><version>6.0.3</version><scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <finalName>order-duality</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>3.14.1</version>
+        <configuration><parameters>true</parameters></configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.5.4</version>
+      </plugin>
+      <plugin>
+        <groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration><mainClass>com.bazlur.orders.OrdersApplication</mainClass></configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <profiles>
+    <profile>
+      <id>integration</id>
+      <build><plugins><plugin>
+        <groupId>org.apache.maven.plugins</groupId><artifactId>maven-failsafe-plugin</artifactId><version>3.5.4</version>
+        <configuration><excludedGroups>${excludedTestGroups}</excludedGroups></configuration>
+        <executions><execution><goals><goal>integration-test</goal><goal>verify</goal></goals></execution></executions>
+      </plugin></plugins></build>
+    </profile>
+    <profile>
+      <id>ollama</id>
+      <properties><excludedTestGroups>none</excludedTestGroups></properties>
+    </profile>
+  </profiles>
+</project>
