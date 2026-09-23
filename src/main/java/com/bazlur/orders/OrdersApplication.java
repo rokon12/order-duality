@@ -19,6 +19,7 @@ public class OrdersApplication {
             application.setAdditionalProfiles(agent ? "agent" : "mock-agent");
         }
         var context = application.run(args);
-        if (agent || mock) context.close();
+        // The CLI modes run once; exit with the code from AgentCommand (non-zero when it could not answer).
+        if (agent || mock) System.exit(SpringApplication.exit(context));
     }
 }
