@@ -4,7 +4,7 @@ A small Java order-management application investigating **MySQL JSON Duality Vie
 
 The project uses Java 25, Spring Boot 4.1.1, plain JDBC and MySQL **9.7.2 Community Server**. LangChain4j 1.20.0 connects the read-only agent tools to local Ollama. Customers, orders, order items and products remain ordinary normalized tables. There are **no JSON columns in the application schema**. A temporary JSON-column experiment is kept separate.
 
-Read the [article](docs/article.md), the [lab notes](docs/lab-notes.md), or the [captured experiment results](docs/evidence/experiments.txt). The [ACE submission description](docs/ace-submission.md) maps the work to the bounty criteria.
+Read the [lab notes](docs/lab-notes.md) for what happened along the way, or the [captured experiment results](docs/evidence/experiments.txt) for the raw MySQL behavior.
 
 ![Architecture: Java document consumers and conventional relational access over the same MySQL tables](docs/architecture.svg)
 
@@ -17,9 +17,9 @@ Read the [article](docs/article.md), the [lab notes](docs/lab-notes.md), or the 
 - A real local Ollama agent that chooses read-only tools and answers from MySQL documents. The deterministic mock is also available for offline comparison.
 - Validation, foreign keys, rollback, stale tokens, simultaneous writers, unsupported view definitions and statement forms.
 
-The latest native run passed **20 unit tests and 33 integration tests** on Temurin 25.0.1, with none skipped ([native summary](docs/evidence/test-summary.txt)). The latest Compose run, made before the model preflight check was removed, passed 22 unit and 33 integration tests ([Compose summary](docs/evidence/compose/test-summary.txt)). Earlier Compose runs are kept in [compose-2026-09-22](docs/evidence/compose-2026-09-22/test-summary.txt) and [compose-2026-09-23-before-sorting](docs/evidence/compose-2026-09-23-before-sorting/test-summary.txt). This is a functional demonstration, not a throughput benchmark or a production commerce service.
+The latest native run passed **20 unit tests and 33 integration tests** on Temurin 25.0.1, with none skipped ([summary](docs/evidence/test-summary.txt)). The containerized suite also passes; its [captured Compose run](docs/evidence/compose/test-summary.txt) is from slightly earlier code with two more unit tests. Older Compose runs are kept in dated folders under [docs/evidence](docs/evidence). This is a functional demonstration, not a throughput benchmark or a production commerce service.
 
-The integration total includes three real Ollama cases. The [native answer review](docs/evidence/ollama-answer-review.md) and [Compose answer review](docs/evidence/compose/answer-review.md) inspect the actual prose. Before the customer-orders tool sorted orders in Java, the history answer's correctness depended on the unspecified order of the view's array: the [September 22 Compose run](docs/evidence/compose-2026-09-22/answer-review.md) called a shipped order open, and the [next run](docs/evidence/compose-2026-09-23-before-sorting/answer-review.md), with a different array order, did not. With sorted input the fixture answers are correct, but a CLI run still misordered two orders it received sorted. Passing protocol and selected-value checks is not proof of a correct model explanation.
+The integration total includes three real Ollama cases. The [native](docs/evidence/ollama-answer-review.md) and [Compose](docs/evidence/compose/answer-review.md) answer reviews read the actual prose. One finding shaped the code: the model's history answer changed with the order of the view's `orders` array, which MySQL does not guarantee ([wrong](docs/evidence/compose-2026-09-22/answer-review.md) with one order, [right](docs/evidence/compose-2026-09-23-before-sorting/answer-review.md) with another), so the tool now sorts orders newest first in Java. Even with sorted input and fixed settings, answers can still vary between runs. Passing protocol and selected-value checks is not proof of a correct model explanation.
 
 ## Requirements and exact versions
 
@@ -233,11 +233,11 @@ java -jar target/order-duality.jar --agent --customer-id=44 \
   --question="Do I have any orders?"
 ```
 
-`--customer-id` supplies the customer scope from the host application. Java rejects a model request for another customer's data. This CLI is not a login system: a deployed service must obtain that scope from an authenticated identity. The database account can read both views across customers; row authorization is the Java check, not a MySQL row-security policy.
+`--customer-id` supplies the customer scope from the host application. Java passes it to every tool call through LangChain4j's `InvocationParameters`, which the tools read but the model never sees, and rejects a model request for another customer's data before any data reaches the model. This CLI is not a login system: a deployed service must obtain that scope from an authenticated identity. The database account can read both views across customers; row authorization is the Java check, not a MySQL row-security policy.
 
 [CustomerOrderTools](src/main/java/com/bazlur/orders/ai/CustomerOrderTools.java) declares the operations with LangChain4j's `@Tool` and `@P`. `AiServices` generates their schemas, converts arguments and invokes the methods. The [captured tool definitions](docs/examples/tools.json) come from an actual LangChain4j request in a stub-server test; there is no separately maintained runtime schema or custom tool dispatcher.
 
-[OllamaAgent](src/main/java/com/bazlur/orders/ai/OllamaAgent.java) uses two AI services. The reader has tools marked `returnBehavior = IMMEDIATE`, so a successful tool batch returns to Java. The explainer receives those documents with the question and status/price rules, and has no tools. [OllamaProperties](src/main/java/com/bazlur/orders/config/OllamaProperties.java) builds the `OllamaChatModel` from the configured URL and model (temperature 0, seed 42, thinking off); both AI services use it, and all Ollama traffic goes through LangChain4j. See the official [tool support](https://docs.langchain4j.dev/tutorials/tools/) and [Ollama integration](https://docs.langchain4j.dev/integrations/language-models/ollama/).
+[OllamaAgent](src/main/java/com/bazlur/orders/ai/OllamaAgent.java) builds two AI services once, at startup. The reader has tools marked `returnBehavior = IMMEDIATE`, so a successful tool batch returns to Java. The explainer receives those documents with the question and status/price rules, and has no tools. Per-question state (the customer scope and the tool-output budget) travels in `InvocationParameters`. [OllamaProperties](src/main/java/com/bazlur/orders/config/OllamaProperties.java) builds the `OllamaChatModel` from the configured URL and model (temperature 0, seed 42, thinking off); both AI services use it, and all Ollama traffic goes through LangChain4j. See the official [tool support](https://docs.langchain4j.dev/tutorials/tools/) and [Ollama integration](https://docs.langchain4j.dev/integrations/language-models/ollama/).
 
 The tested argument conversion is permissive in specific ways: LangChain4j accepts `"1001"` for a `long` and ignores unknown argument properties. It rejects fractional, missing and out-of-range IDs before repository access. Java methods then enforce positive IDs and the customer scope. These checks are separate from the model-facing schema.
 
@@ -328,7 +328,7 @@ Spring configuration is in [application.properties](src/main/resources/applicati
 - **Shared data:** the document embeds current customer/product details, not an immutable invoice snapshot. Those fields are read-only in our view, but changes through other paths can invalidate its etag.
 - **Business rules:** annotations and relational constraints are not a workflow engine. The API performs status-transition and field checks.
 - **Portability:** MySQL-specific SQL and error codes; tested on 9.7.2 only. A schema/view change is an API contract change.
-- **Model quality:** local inference was tested on three fixture questions. The first manual run made a date-ordering error; the Compose history answer and an earlier native answer contained an incorrect open-order conclusion. Read-only tools and customer scoping constrain access; they do not prove resistance to prompt injection or factual correctness.
+- **Model quality:** local inference was tested on three fixture questions. Earlier runs misordered dates and wrongly called a shipped order open; sorting orders in Java fixed the input-order dependence, but a CLI run still misordered sorted input, and identical runs can answer differently. Show order status and ordering from Java and treat the model's text as commentary. Read-only tools and customer scoping constrain access; they do not prove resistance to prompt injection or factual correctness.
 - **Scope:** no full Hibernate implementation, payment/inventory workflow, authentication, pagination, production load test, failover test, or complete DML feature matrix. See [lab notes](docs/lab-notes.md) for the exact boundary of the evidence.
 
 ## Stop or reset
@@ -367,14 +367,12 @@ src/test/java/com/bazlur/orders/
   integration/                     MySQL, REST and optional real-model tests
 sql/                               relational model, views, grants, comparisons
 scripts/                           verification and HTTP smoke test
-docs/article.md                    technical article draft
-docs/lab-notes.md                   observations, surprises and evidence boundaries
+docs/lab-notes.md                  observations, surprises and evidence boundaries
 docs/architecture.svg              editable vector diagram
 docs/architecture.png              2160 × 1800 article image
 docs/architecture.mmd              Mermaid source
 docs/examples/                     real JSON captures, HTTP requests, tool schema
 docs/evidence/                     tested version, MySQL errors and query plans
-docs/ace-submission.md              bounty submission description
 ```
 
 The diagram PNG can be rebuilt with `rsvg-convert -w 2160 -h 1800 docs/architecture.svg -o docs/architecture.png`. Code is licensed under [MIT](LICENSE).
