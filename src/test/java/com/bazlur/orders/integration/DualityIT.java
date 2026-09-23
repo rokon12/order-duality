@@ -497,6 +497,75 @@ class DualityIT {
         }
     }
 
+    @Test void orderReadPathsReturnTheSameOrderAndRecordTheirSql() throws Throwable {
+        try (var context = new SpringApplicationBuilder(OrdersApplication.class).run(
+                "--server.port=0",
+                "--orders.database.url=" + api.url(),
+                "--orders.database.user=" + api.user(),
+                "--orders.database.password=" + api.password(),
+                "--orders.database.agent-user=" + agent.user(),
+                "--orders.database.agent-password=" + agent.password());
+             var client = HttpClient.newHttpClient()) {
+            var base = "http://127.0.0.1:" + context.getEnvironment().getProperty("local.server.port") + "/orders/";
+            var view = (ObjectNode) Json.parse(get(client, base + "1001"));
+            view.remove("_metadata");
+            for (var suffix : List.of("/relational", "/jpa", "/spring-data-jdbc")) {
+                assertTrue(Json.sameValue(canonical(view), canonical(Json.parse(get(client, base + "1001" + suffix)))),
+                        suffix + " must return the same business data as the duality view");
+                // Known contract difference: the view returns null for an order without lines, Java lists are empty.
+                assertTrue(Json.parse(get(client, base + "1005" + suffix)).path("items").isEmpty(), suffix);
+            }
+            assertTrue(Json.parse(get(client, base + "1005")).path("items").isNull());
+
+            var counts = new LinkedHashMap<String, Integer>();
+            for (var suffix : List.of("", "/relational", "/jpa", "/spring-data-jdbc")) {
+                var statements = selectsSentBy(api.user(), () -> get(client, base + "1001" + suffix));
+                counts.put(suffix.isEmpty() ? "duality view" : suffix.substring(1), statements.size());
+                evidence.add("SQL for GET /orders/1001" + suffix + " (" + statements.size() + " SELECT):");
+                statements.forEach(statement -> evidence.add("  " + statement));
+            }
+            evidence.add("SELECT statements per order read: " + counts);
+            assertEquals(1, counts.get("duality view"));
+            assertEquals(1, counts.get("relational"));
+            assertEquals(1, counts.get("jpa"), "the join fetch must load the whole order in one query");
+            assertTrue(counts.get("spring-data-jdbc") > 1, "customer and products live outside the order aggregate");
+        }
+    }
+
+    private String get(HttpClient client, String url) throws Exception {
+        var response = client.send(HttpRequest.newBuilder(URI.create(url)).build(), HttpResponse.BodyHandlers.ofString());
+        assertEquals(200, response.statusCode(), url);
+        return response.body();
+    }
+
+    // Records the SELECT statements one account sends while the action runs, using MySQL's general query log.
+    private List<String> selectsSentBy(String user, org.junit.jupiter.api.function.Executable action) throws Throwable {
+        String output = scalar("SELECT @@GLOBAL.log_output");
+        sql("SET GLOBAL log_output = 'TABLE'");
+        sql("TRUNCATE TABLE mysql.general_log");
+        sql("SET GLOBAL general_log = 'ON'");
+        try {
+            action.execute();
+        } finally {
+            sql("SET GLOBAL general_log = 'OFF'");
+            sql("SET GLOBAL log_output = '" + output + "'");
+        }
+        var statements = new ArrayList<String>();
+        try (var c = db.getConnection(); var s = c.prepareStatement("""
+                SELECT CONVERT(argument USING utf8mb4) FROM mysql.general_log
+                WHERE user_host LIKE ? AND command_type IN ('Query', 'Execute')
+                ORDER BY event_time""")) {
+            s.setString(1, user + "[%");
+            try (var rs = s.executeQuery()) {
+                while (rs.next()) {
+                    var statement = rs.getString(1).replaceAll("\\s+", " ").trim();
+                    if (statement.toLowerCase(Locale.ROOT).startsWith("select") && !statement.contains("@@")) statements.add(statement);
+                }
+            }
+        }
+        return statements;
+    }
+
     private HttpResponse<String> put(HttpClient client, String base, String body) throws Exception {
         return client.send(HttpRequest.newBuilder(URI.create(base + "/orders/1001"))
                 .header("Content-Type", "application/json").PUT(HttpRequest.BodyPublishers.ofString(body)).build(), HttpResponse.BodyHandlers.ofString());

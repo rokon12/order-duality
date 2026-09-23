@@ -35,6 +35,13 @@
       <groupId>com.zaxxer</groupId><artifactId>HikariCP</artifactId>
     </dependency>
     <dependency>
+      <!-- Comparison paths: the same order read through Hibernate and through Spring Data JDBC aggregates. -->
+      <groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-jdbc</artifactId>
+    </dependency>
+    <dependency>
       <!-- Jackson 3, as managed by Spring Boot 4. LangChain4j brings its own Jackson 2 internally. -->
       <groupId>tools.jackson.core</groupId><artifactId>jackson-databind</artifactId>
     </dependency>

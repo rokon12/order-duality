@@ -8,6 +8,8 @@ import com.bazlur.orders.application.OrderService;
 import com.bazlur.orders.json.Json;
 import com.bazlur.orders.persistence.ConventionalOrderRepository;
 import com.bazlur.orders.persistence.OrderDocumentRepository;
+import com.bazlur.orders.persistence.jpa.JpaOrderReader;
+import com.bazlur.orders.persistence.springdatajdbc.SpringDataJdbcOrderReader;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
@@ -22,11 +24,16 @@ public class OrderController {
     private final OrderDocumentRepository documents;
     private final ConventionalOrderRepository conventional;
     private final OrderService service;
+    private final JpaOrderReader jpa;
+    private final SpringDataJdbcOrderReader springDataJdbc;
 
-    public OrderController(OrderDocumentRepository documents, ConventionalOrderRepository conventional, OrderService service) {
+    public OrderController(OrderDocumentRepository documents, ConventionalOrderRepository conventional, OrderService service,
+                           JpaOrderReader jpa, SpringDataJdbcOrderReader springDataJdbc) {
         this.documents = documents;
         this.conventional = conventional;
         this.service = service;
+        this.jpa = jpa;
+        this.springDataJdbc = springDataJdbc;
     }
 
     @GetMapping("/orders/{id:[1-9][0-9]*}")
@@ -44,6 +51,17 @@ public class OrderController {
     @GetMapping("/orders/{id:[1-9][0-9]*}/relational")
     public ResponseEntity<String> getRelationalOrder(@PathVariable String id) throws IOException, SQLException {
         return json(Json.encode(conventional.getOrder(parseId(id)).orElseThrow(() -> new OrderException(NOT_FOUND, "Order not found"))));
+    }
+
+    // The same order through Hibernate and through Spring Data JDBC, for comparison with the view.
+    @GetMapping("/orders/{id:[1-9][0-9]*}/jpa")
+    public ResponseEntity<String> getJpaOrder(@PathVariable String id) {
+        return json(Json.encode(jpa.getOrder(parseId(id)).orElseThrow(() -> new OrderException(NOT_FOUND, "Order not found"))));
+    }
+
+    @GetMapping("/orders/{id:[1-9][0-9]*}/spring-data-jdbc")
+    public ResponseEntity<String> getSpringDataJdbcOrder(@PathVariable String id) {
+        return json(Json.encode(springDataJdbc.getOrder(parseId(id)).orElseThrow(() -> new OrderException(NOT_FOUND, "Order not found"))));
     }
 
     @GetMapping("/customers/{id:[1-9][0-9]*}/orders")

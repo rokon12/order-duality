@@ -3,7 +3,10 @@ package com.bazlur.orders.persistence;
 import module java.base;
 import module java.sql;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.bazlur.orders.persistence.OrderDetails.Customer;
+import com.bazlur.orders.persistence.OrderDetails.Line;
+import com.bazlur.orders.persistence.OrderDetails.Order;
+import com.bazlur.orders.persistence.OrderDetails.Product;
 
 // One query, not N+1 queries. The baseline deserves the same care as the new path.
 public final class ConventionalOrderRepository {
@@ -32,8 +35,8 @@ public final class ConventionalOrderRepository {
                 var lines = new ArrayList<Line>();
                 var orderId = rows.getLong("id");
                 var status = rows.getString("status");
-                var createdAt = rows.getString("created_at");
-                var updatedAt = rows.getString("updated_at");
+                var createdAt = rows.getObject("created_at", LocalDateTime.class);
+                var updatedAt = rows.getObject("updated_at", LocalDateTime.class);
                 do {
                     if (rows.getObject("item_id") != null) {
                         var product = new Product(rows.getLong("product_id"), rows.getString("sku"), rows.getString("product_name"));
@@ -42,17 +45,6 @@ public final class ConventionalOrderRepository {
                 } while (rows.next());
                 return Optional.of(new Order(orderId, status, createdAt, updatedAt, customer, lines));
             }
-        }
-    }
-
-    public record Customer(long id, String name, String email) {}
-    public record Product(long id, String sku, String name) {}
-    public record Line(long id, int quantity, BigDecimal unitPrice, Product product) {}
-    // Java names the field id; the JSON key matches the duality view's required _id.
-    public record Order(@JsonProperty("_id") long id, String status, String createdAt, String updatedAt,
-                        Customer customer, List<Line> items) {
-        public Order {
-            items = List.copyOf(items);
         }
     }
 }
