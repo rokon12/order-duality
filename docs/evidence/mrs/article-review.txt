@@ -1,0 +1,51 @@
+Foojay article technical and editorial review
+Review date: 2026-11-05 (America/Toronto)
+Implementation reviewed: 2516fae6f35fe6e16fc6de3a0744db40be5c08a4
+
+Source and evidence checks
+- Runtime code, MRS configuration, Compose deployment, and original acceptance
+  evidence are unchanged from the published implementation commit.
+- Three Java excerpts match their published classes after whitespace
+  normalization: OrderTools.getOrder, MrsOrders.requestCancellation,
+  and MrsClient.call. Class context and imports are omitted in the article.
+- Three SQL excerpts match workflow.sql/endpoints.sql after whitespace
+  normalization: native document lookup, summary resource, request procedure.
+- JSON examples parse; all shell blocks pass bash -n.
+- Captured Java results: 6 tool tests and 5 integration tests, zero failures,
+  errors, or skips. Captured Python results: 10 tests, zero failures/errors.
+- These are the November 4 acceptance results. The complete suites and model
+  inference were not rerun during this documentation review.
+
+Targeted compatibility recheck against the local MRS demo
+SQL:
+CREATE VIEW order_demo.spike_unsupported_wrapper AS
+SELECT data FROM order_demo.orders_dv;
+
+Observed MySQL response:
+ERROR 6504 (HY000) at line 1: JSON DUALITY VIEW orders_dv cannot be used with a normal SQL view.
+
+Editorial corrections
+- Distinguished model-generated text from executable SQL/tool authority.
+- Located human-consent enforcement in trusted Java, not in MRS or the model.
+- Clarified that expiry is evaluated on attempted confirmation.
+- Described the actual executor check and order/request lock sequence.
+- Distinguished Java tool budgets from the REST API's permissions.
+- Made tool examples real source excerpts and added the Ollama setup command.
+- Retained the observed currency invention, reason paraphrase, missing denial
+  command, same-process executor trust, retry scope, session lifecycle, and
+  performance limitations.
+- Removed exploratory deployment-friction claims not backed by the captured
+  public evidence.
+
+Links and presentation
+- All 15 commit-pinned GitHub links returned HTTP 200 without authentication.
+- The earlier Foojay article and Ollama model page were publicly accessible.
+- Oracle component and MRS documentation were retrieved with the web reader;
+  Oracle rejected the automated HTTP client with 403, so that client was not
+  used to infer that those documentation links were broken.
+- Architecture exported from docs/mrs-architecture.mmd with Mermaid CLI
+  11.12.0 and docs/mrs-architecture.config.json. PNG visually inspected; spacing
+  and labels corrected. SVG generated from the same source. Article uses the
+  PNG for publishing-system portability.
+- Review is of the article and its cited implementation/evidence. It is not a
+  new repository-wide security audit or a production-readiness certification.
