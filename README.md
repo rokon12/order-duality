@@ -1,5 +1,7 @@
 # Order Duality
 
+**MRS follow-up:** [Run the HTTP-only Java agent and controlled cancellation workflow](docs/mrs-agent.md). It uses a separate MySQL 26.10/MRS deployment, authenticated API roles, native duality-document reads, and a human confirmation path. The original article's application below remains available independently.
+
 A small Java order-management application investigating **MySQL JSON Duality Views** over an existing relational model. The interesting part is what happens when a client writes the document back.
 
 The project uses Java 25, Spring Boot 4.1.1, plain JDBC and MySQL **9.7.2 Community Server**. LangChain4j 1.20.0 connects the read-only agent tools to local Ollama. Customers, orders, order items and products remain ordinary normalized tables. There are **no JSON columns in the application schema**. A temporary JSON-column experiment is kept separate.

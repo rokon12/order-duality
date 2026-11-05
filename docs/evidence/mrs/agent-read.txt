@@ -1,0 +1,6 @@
+Assistant: Your order 1001 contains two items:
+
+* Mechanical Keyboard (KB-001) - quantity: 2, unit price: $149.00
+* Wireless Mouse (MS-002) - quantity: 1, unit price: $49.50
+
+The current status of your order is PROCESSING.

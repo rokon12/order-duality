@@ -1,0 +1,82 @@
+{
+  "testsRun": 10,
+  "failures": 0,
+  "errors": 0,
+  "checks": [
+    {
+      "test": "test_authentication_and_roles",
+      "check": "unauthenticated=401; reader write, agent confirm, executor read=403",
+      "result": "PASS"
+    },
+    {
+      "test": "test_concurrent_confirmation_commits_once",
+      "check": "concurrent confirmations create one cancellation event",
+      "result": "PASS"
+    },
+    {
+      "test": "test_native_document_and_wrapper_limitation",
+      "check": "native document via checked procedure; SQL wrapper rejected",
+      "result": {
+        "documentId": 1001,
+        "wrapperError": 6504
+      }
+    },
+    {
+      "test": "test_no_generic_writes_or_unrelated_resources",
+      "check": "generic mutations and unexposed resources unavailable",
+      "result": "PASS"
+    },
+    {
+      "test": "test_ownership_and_forged_identity",
+      "check": "forged userId is overwritten; foreign reads and writes denied",
+      "result": "PASS"
+    },
+    {
+      "test": "test_request_does_not_cancel_and_confirmation_is_bound",
+      "check": "request/confirmation/replay",
+      "result": {
+        "request": {
+          "ok": true,
+          "state": "PENDING",
+          "orderId": 9103460091,
+          "requestId": "feffcc77-d8aa-11f1-8ef1-be545d8d28fc"
+        },
+        "confirmation": {
+          "ok": true,
+          "state": "CONFIRMED",
+          "orderId": 9103460091,
+          "requestId": "feffcc77-d8aa-11f1-8ef1-be545d8d28fc"
+        },
+        "cancellationAuditRows": 1
+      }
+    },
+    {
+      "test": "test_retry_and_conflicting_payload",
+      "check": "concurrent request retries create one request",
+      "result": "PASS"
+    },
+    {
+      "test": "test_shipping_after_request_is_rechecked",
+      "check": "shipped orders cannot be cancelled",
+      "result": "PASS"
+    },
+    {
+      "test": "test_shipping_race_has_one_terminal_outcome",
+      "check": "conditional shipping races with cancellation",
+      "result": {
+        "finalStatus": "CANCELLED",
+        "confirmation": {
+          "ok": true,
+          "state": "CONFIRMED",
+          "orderId": 9252180203,
+          "requestId": "00009301-d8ab-11f1-8ef1-be545d8d28fc"
+        }
+      }
+    },
+    {
+      "test": "test_stale_order_and_expired_request",
+      "check": "stale version and expiry both reject confirmation",
+      "result": "PASS"
+    }
+  ]
+}

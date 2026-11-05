@@ -1,0 +1,7 @@
+id	status	version
+1003	CANCELLED	1
+id	order_id	state	reason
+246b1e38-d8ab-11f1-8ef1-be545d8d28fc	1003	CONFIRMED	Ordered by mistake
+event	event_count
+CANCELLED	1
+REQUESTED	1

@@ -1,0 +1,24 @@
+name: order-duality-mrs
+services:
+  mysql:
+    image: mysql:26.10.0@sha256:3819b2b23835c4a73c8b022fafc33c8095c0f81c929a8b7a84613d2fba6c52f5
+    environment:
+      MYSQL_ROOT_PASSWORD: local-mrs-root-only
+      TZ: UTC
+    ports:
+      - "127.0.0.1:${MRS_SQL_PORT:-3310}:3306"
+      - "127.0.0.1:${MRS_PORT:-8443}:33443"
+    command: ["--default-time-zone=+00:00"]
+    volumes:
+      - mrs-data:/var/lib/mysql
+      - ./sql:/workspace/sql:ro
+      - ./mrs:/workspace/mrs:ro
+      - ./.mrs/tls:/etc/mrs/tls:ro
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_ROOT_PASSWORD mysql -uroot -Nse 'SELECT 1' >/dev/null"]
+      interval: 3s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+volumes:
+  mrs-data:

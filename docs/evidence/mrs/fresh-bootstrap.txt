@@ -1,0 +1,99 @@
+ Network order-mrs-acceptance_default  Creating
+ Network order-mrs-acceptance_default  Created
+ Volume "order-mrs-acceptance_mrs-data"  Creating
+ Volume "order-mrs-acceptance_mrs-data"  Created
+ Container order-mrs-acceptance-mysql-1  Creating
+ Container order-mrs-acceptance-mysql-1  Created
+ Container order-mrs-acceptance-mysql-1  Starting
+ Container order-mrs-acceptance-mysql-1  Started
+ Container order-mrs-acceptance-mysql-1  Waiting
+ Container order-mrs-acceptance-mysql-1  Healthy
+Cannot set LC_ALL to locale en_US.UTF-8: No such file or directory
+[33mWARNING: [0mUsing a password on the command line interface can be insecure.
+Cannot set LC_ALL to locale en_US.UTF-8: No such file or directory
+[33mWARNING: [0mUsing a password on the command line interface can be insecure.
+
+Records: 3  Duplicates: 0  Warnings: 0
+
+Records: 4  Duplicates: 0  Warnings: 0
+
+Records: 5  Duplicates: 0  Warnings: 0
+
+Records: 5  Duplicates: 0  Warnings: 0
+Cannot set LC_ALL to locale en_US.UTF-8: No such file or directory
+[33mWARNING: [0mUsing a password on the command line interface can be insecure.
+Cannot set LC_ALL to locale en_US.UTF-8: No such file or directory
+[33mWARNING: [0mUsing a password on the command line interface can be insecure.
+
+REST metadata configured successfully.
+
+REST SERVICE `/orders` created successfully.
+
+Now using REST SERVICE `/orders`.
+
+REST AUTH APP `OrderMRS` created successfully.
+
+REST USER `:"alice"@"OrderMRS"` created successfully.
+
+REST USER `:"bob"@"OrderMRS"` created successfully.
+
+REST USER `:"reader"@"OrderMRS"` created successfully.
+
+REST USER `:"executor"@"OrderMRS"` created successfully.
+
+REST SCHEMA `/orders/shop` created successfully.
+
+Now using REST SCHEMA `/shop` on REST SERVICE `/orders`.
+
+Records: 3  Duplicates: 0  Warnings: 0
+Cannot set LC_ALL to locale en_US.UTF-8: No such file or directory
+[33mWARNING: [0mUsing a password on the command line interface can be insecure.
+
+Records: 0  Duplicates: 0  Warnings: 0
+
+Records: 1  Duplicates: 0  Warnings: 0
+Cannot set LC_ALL to locale en_US.UTF-8: No such file or directory
+[33mWARNING: [0mUsing a password on the command line interface can be insecure.
+
+Now using REST SERVICE `/orders`.
+
+Now using REST SCHEMA `/shop` on REST SERVICE `/orders`.
+
+REST VIEW `/orders/shop/orders` created successfully.
+
+REST VIEW `/orders/shop/requests` created successfully.
+
+REST PROCEDURE `/orders/shop/whoami` created successfully.
+
+REST PROCEDURE `/orders/shop/getOrder` created successfully.
+
+REST PROCEDURE `/orders/shop/requestCancellation` created successfully.
+
+REST PROCEDURE `/orders/shop/confirmCancellation` created successfully.
+
+REST ROLE `order_reader` created successfully.
+
+GRANT to `order_reader` added successfully.
+
+GRANT to `order_reader` added successfully.
+
+GRANT to `order_reader` added successfully.
+
+GRANT to `order_reader` added successfully.
+
+REST ROLE `order_requester` created successfully.
+
+GRANT to `order_requester` added successfully.
+
+REST ROLE `order_confirmer` created successfully.
+
+GRANT to `order_confirmer` added successfully.
+
+GRANT ROLE to `alice`@`OrderMRS` added successfully.
+
+GRANT ROLE to `bob`@`OrderMRS` added successfully.
+
+GRANT ROLE to `reader`@`OrderMRS` added successfully.
+
+GRANT ROLE to `executor`@`OrderMRS` added successfully.
+MRS ready at https://localhost:8444/orders

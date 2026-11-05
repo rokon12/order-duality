@@ -1,0 +1,15 @@
+test_authentication_and_roles (__main__.BoundaryTests.test_authentication_and_roles) ... ok
+test_concurrent_confirmation_commits_once (__main__.BoundaryTests.test_concurrent_confirmation_commits_once) ... ok
+test_native_document_and_wrapper_limitation (__main__.BoundaryTests.test_native_document_and_wrapper_limitation) ... ok
+test_no_generic_writes_or_unrelated_resources (__main__.BoundaryTests.test_no_generic_writes_or_unrelated_resources) ... ok
+test_ownership_and_forged_identity (__main__.BoundaryTests.test_ownership_and_forged_identity) ... ok
+test_request_does_not_cancel_and_confirmation_is_bound (__main__.BoundaryTests.test_request_does_not_cancel_and_confirmation_is_bound) ... ok
+test_retry_and_conflicting_payload (__main__.BoundaryTests.test_retry_and_conflicting_payload) ... ok
+test_shipping_after_request_is_rechecked (__main__.BoundaryTests.test_shipping_after_request_is_rechecked) ... ok
+test_shipping_race_has_one_terminal_outcome (__main__.BoundaryTests.test_shipping_race_has_one_terminal_outcome) ... ok
+test_stale_order_and_expired_request (__main__.BoundaryTests.test_stale_order_and_expired_request) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 6.919s
+
+OK
