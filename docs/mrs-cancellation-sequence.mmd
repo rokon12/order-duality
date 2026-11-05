@@ -1,0 +1,34 @@
+sequenceDiagram
+    participant C as Customer
+    participant J as Java application
+    participant R as MRS
+    participant D as MySQL
+    Note over J,R: Authenticated sessions already established.<br/>Java binds ownerHex using customer /whoami.
+    rect rgb(235, 244, 253)
+        Note over C,D: 1. Propose — model tools use only the customer client
+        C->>J: Ask to cancel order 1003
+        J->>R: Customer token: POST /requestCancellation
+        R->>D: Inject customer principal, call request_cancellation
+        D-->>R: PENDING request UUID<br/>Order unchanged
+        R-->>J: Pending result
+    end
+    rect rgb(244, 244, 244)
+        Note over C,D: 2. Review — trusted terminal path, outside model dispatch
+        C->>J: /confirm UUID
+        J->>R: Customer token: GET /requests/UUID
+        R-->>J: Owned request: order, reason, state
+        J-->>C: Display stored request and confirmation challenge
+        C->>J: Type exact CONFIRM UUID
+        J->>R: Customer token: re-fetch request
+        R-->>J: Owned request, Java checks order and reason
+    end
+    rect rgb(235, 247, 239)
+        Note over C,D: 3. Confirm — trusted terminal path uses the executor client
+        J->>R: Executor token: POST /confirmCancellation<br/>(requestId, ownerHex)
+        R->>D: Inject executor principal, call confirm_cancellation
+        Note over R,D: Check executor and owner binding.<br/>Lock order before request.<br/>Validate state, expiry and version.<br/>Commit cancellation and audit.
+        D-->>R: CONFIRMED result
+        R-->>J: Confirmed result
+        J-->>C: Structured outcome
+    end
+    Note over J,R: Both clients share one process.<br/>The model's tools never receive the executor client.

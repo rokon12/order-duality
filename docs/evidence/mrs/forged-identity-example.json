@@ -1,0 +1,42 @@
+{
+  "capturedOn": "2026-11-05",
+  "deployment": "local order-duality-mrs demo",
+  "implementation": "2516fae6f35fe6e16fc6de3a0744db40be5c08a4",
+  "authenticatedAs": "bob",
+  "expectedPrincipalId": "11F1D8A82520754D9812C65D2B8D2BD3",
+  "request": {
+    "method": "POST",
+    "path": "/orders/shop/whoami",
+    "body": {
+      "userId": "11F1D8A8251FA90C9812C65D2B8D2BD3"
+    }
+  },
+  "status": 200,
+  "response": {
+    "resultSets": [
+      {
+        "type": "OrdersShopWhoami",
+        "items": [
+          {
+            "result": {
+              "ok": true,
+              "principalId": "11F1D8A82520754D9812C65D2B8D2BD3"
+            }
+          }
+        ],
+        "_metadata": {
+          "columns": [
+            {
+              "name": "result",
+              "type": "JSON"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "extractedResult": {
+    "ok": true,
+    "principalId": "11F1D8A82520754D9812C65D2B8D2BD3"
+  }
+}
