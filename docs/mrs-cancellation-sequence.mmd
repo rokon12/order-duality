@@ -1,24 +1,30 @@
 sequenceDiagram
     participant C as Customer
     participant J as Java application
+    participant M as Model
     participant R as MRS
     participant D as MySQL
     Note over J,R: Authenticated sessions already established.<br/>Java binds ownerHex using customer /whoami.
     rect rgb(235, 244, 253)
-        Note over C,D: 1. Propose — model tools use only the customer client
-        C->>J: Ask to cancel order 1003
+        Note over C,D: 1. Propose — the model picks a tool, Java runs it with the customer client
+        C->>J: Cancel order 1003
+        J->>M: Question and three tool definitions
+        M-->>J: Tool call: requestCancellation
         J->>R: Customer token: POST /requestCancellation
         R->>D: Inject customer principal, call request_cancellation
         D-->>R: PENDING request UUID<br/>Order unchanged
         R-->>J: Pending result
+        J->>M: Tool result
+        M-->>J: Explanation
+        J-->>C: Assistant text, then the recorded request
     end
     rect rgb(244, 244, 244)
-        Note over C,D: 2. Review — trusted terminal path, outside model dispatch
-        C->>J: /confirm UUID
-        J->>R: Customer token: GET /requests/UUID
-        R-->>J: Owned request: order, reason, state
-        J-->>C: Display stored request and confirmation challenge
-        C->>J: Type exact CONFIRM UUID
+        Note over C,D: 2. Review — trusted terminal path, the model takes no part
+        C->>J: /confirm
+        J->>R: Customer token: GET /requests/UUID, POST /getOrder
+        R-->>J: Owned request and order document
+        J-->>C: Items, status, reason, expiry, then [y/N]
+        C->>J: y
         J->>R: Customer token: re-fetch request
         R-->>J: Owned request, Java checks order and reason
     end
@@ -29,6 +35,6 @@ sequenceDiagram
         Note over R,D: Check executor and owner binding.<br/>Lock order before request.<br/>Validate state, expiry and version.<br/>Commit cancellation and audit.
         D-->>R: CONFIRMED result
         R-->>J: Confirmed result
-        J-->>C: Structured outcome
+        J-->>C: Order 1003 cancelled
     end
     Note over J,R: Both clients share one process.<br/>The model's tools never receive the executor client.

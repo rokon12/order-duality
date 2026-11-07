@@ -3,7 +3,7 @@ flowchart TB
     J <--> L[Local Ollama model]
     subgraph APP[Java application process]
         J --> T[Three model tools]
-        J --> C[Review and exact confirmation]
+        J --> C[Review and y/N approval]
     end
     subgraph SERVER[MySQL with MRS]
         R[MRS reader and requester roles]
@@ -20,6 +20,6 @@ flowchart TB
         E --> X
         X --> DB
     end
-    T -->|HTTPS| R
-    C --> R
-    C -->|HTTPS| E
+    T -->|customer token| R
+    C -->|customer token| R
+    C -->|executor token| E
