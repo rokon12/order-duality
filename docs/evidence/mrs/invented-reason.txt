@@ -1,0 +1,13 @@
+Invented cancellation reason, as seen in an interactive session
+Date: 2026-11-07 (America/Toronto). Build: before the prompt and tool-description change.
+Model: llama3.1:latest. The customer gave no reason; the model supplied one, and the
+review screen displayed it as the request's reason. Logger prefixes are from that build.
+
+> cancel order 1003
+Assistant: A cancellation request has been submitted for order 1003. The status of the order is still pending, and the request is pending review.
+Recorded request (requires separate confirmation): {"ok":true,"state":"PENDING","orderId":1003,"requestId":"066631b6-da7a-11f1-a146-f25ecc3dad45"}
+
+> /confirm
+Order: 1003
+Reason: "I no longer need this order"
+Request status: "PENDING"

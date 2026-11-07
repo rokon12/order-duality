@@ -1,0 +1,3 @@
+$ java -jar mrs-agent/target/mrs-agent.jar --ask What\ is\ in\ my\ order\ 1001\? 
+Assistant: Your order 1001 contains 2 Mechanical Keyboards (KB-001) and 1 Wireless Mouse (MS-002). The order is currently in the PROCESSING status.
+[exit 0]

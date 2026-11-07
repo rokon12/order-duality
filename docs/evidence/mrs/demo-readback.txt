@@ -1,0 +1,12 @@
+order_id  status  version
+1001	PROCESSING	0
+1003	CANCELLED	1
+
+order_id  request_state  reason
+1001	PENDING	Not stated
+1003	CONFIRMED	I ordered it by mistake
+
+order_id  audit_event  count
+1001	REQUESTED	1
+1003	CANCELLED	1
+1003	REQUESTED	1

@@ -1,0 +1,25 @@
+flowchart TB
+    U[Customer] --> J[Java terminal interaction]
+    J <--> L[Local Ollama model]
+    subgraph APP[Java application process]
+        J --> T[Three model tools]
+        J --> C[Review and y/N approval]
+    end
+    subgraph SERVER[MySQL with MRS]
+        R[MRS reader and requester roles]
+        E[MRS confirmer role]
+        S[Ownership filtered summaries]
+        P[Identity checked procedures]
+        X[Transactional confirmation procedure]
+        D[Native orders_dv]
+        DB[(Orders and related tables<br/>Cancellation requests and audit)]
+        R --> S --> DB
+        R --> P
+        P --> D --> DB
+        P --> DB
+        E --> X
+        X --> DB
+    end
+    T -->|customer token| R
+    C -->|customer token| R
+    C -->|executor token| E

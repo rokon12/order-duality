@@ -1,0 +1,5 @@
+{
+  "theme": "neutral",
+  "themeVariables": {"fontFamily": "Arial, sans-serif", "fontSize": "17px"},
+  "sequence": {"useMaxWidth": false, "wrap": true, "width": 210, "actorMargin": 65, "messageMargin": 38, "noteMargin": 14, "mirrorActors": false}
+}

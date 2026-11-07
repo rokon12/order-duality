@@ -6,3 +6,5 @@ target/
 .m2/
 .tools/
 *.log
+.mrs/
+__pycache__/

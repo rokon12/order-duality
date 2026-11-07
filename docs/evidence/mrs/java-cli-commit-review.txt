@@ -1,0 +1,30 @@
+Java/MRS verification before committing the current implementation
+Date: 2026-11-07 02:59 America/Toronto
+Parent commit: 293382aeb0e2ca7d1f98344ef41cac734ea04d79
+
+Command (repository root):
+  mvn -B -ntp -o -Dmaven.repo.local=.m2 -f mrs-agent/pom.xml verify -Pmrs-integration
+
+BUILD SUCCESS on Java 25.
+  OrderAgentTest:        21 passed
+  InteractiveShellTest:  14 passed
+  OrderCommandTest:       7 passed
+  ScreensTest:           10 passed
+  MrsWorkflowIT:         10 passed against the local MRS service
+Total: 62 tests; 0 failures, 0 errors, 0 skipped.
+Spotless: all 18 Java source/test files clean.
+Executable JAR rebuilt.
+
+This check covers the current package organization, picocli CLI and terminal
+screens, conversation memory, per-turn tool state, explicit yes/no confirmation,
+and MRS session renewal. The integration tests create and remove their fixtures.
+
+confirmation-memory-review.txt and picocli-refactor-review.txt are historical
+captures from earlier working-tree iterations on the same date. In particular,
+the later terminal UI uses picocli writers for results/help (stdout) and errors
+(stderr), with SLF4J retained for diagnostics; the earlier capture's assertion
+that all output is logged to stderr does not describe this revision. This file
+records the test results for the implementation being committed.
+
+The Python REST boundary suite and live Ollama smoke test were not rerun in this
+commit-only pass. Earlier captures retain their original scope and results.

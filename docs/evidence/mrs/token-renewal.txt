@@ -1,0 +1,47 @@
+Real bearer-token expiry check
+Date: 2026-11-07 (America/Toronto). Implementation: the code at tag foojay-mrs-article.
+Deployment: the local order-duality-mrs demo stack, Java CLI in a real pseudo-terminal.
+MRS issues bearer tokens that expire 15 minutes after sign-in. The session signed in
+both clients, waited 930 seconds, and then used both expired tokens. No sign-in prompt,
+restart, or error appeared. A disposable order was created just before the second
+/requests and removed afterward. The harness created its request directly through REST,
+so its reason text is test data rather than model output.
+
+Order assistant. Ask about your orders, or type /help.
+
+> /requests
+Order        Status     Expires                  Request ID
+1003         CONFIRMED  2026-11-07 07:18:25 UTC  066631b6-da7a-11f1-a146-f25ecc3dad45
+1001         CONFIRMED  2026-11-07 06:33:59 UTC  d131b2bf-da73-11f1-a146-f25ecc3dad45
+
+> 
+@@@ signed in, waiting 930 seconds for both 15-minute tokens to expire @@@
+
+@@@ tokens now expired, using them @@@
+/requests
+Order        Status     Expires                  Request ID
+1003         CONFIRMED  2026-11-07 07:18:25 UTC  066631b6-da7a-11f1-a146-f25ecc3dad45
+12300000003  PENDING    2026-11-07 08:14:03 UTC  cc3d9ec2-da81-11f1-a146-f25ecc3dad45
+1001         CONFIRMED  2026-11-07 06:33:59 UTC  d131b2bf-da73-11f1-a146-f25ecc3dad45
+
+> /confirm cc3d9ec2-da81-11f1-a146-f25ecc3dad45
+Cancellation request for order 12300000003
+  Order status:   PROCESSING
+  Items:          1 x Braided USB-C Cable (CB-004) at 18.00 each
+  Reason:         "Real expiry check" (written by the assistant)
+  Request status: PENDING
+  Expires:        2026-11-07 08:14:03 UTC
+  Request ID:     cc3d9ec2-da81-11f1-a146-f25ecc3dad45
+
+Cancel order 12300000003? [y/N]: y
+Order 12300000003 cancelled.
+
+> /quit
+end Sat Nov  7 03:04:04 EST 2026
+--- readback ---
+12300000003	CANCELLED
+CONFIRMED	Real expiry check
+CANCELLED	1
+REQUESTED	1
+--- cleanup ---
+fixture orders left	0

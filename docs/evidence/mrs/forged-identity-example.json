@@ -1,0 +1,43 @@
+{
+  "capturedOn": "2026-11-07",
+  "deployment": "fresh order-mrs-article acceptance deployment",
+  "implementation": "foojay-mrs-article",
+  "authenticatedAs": "bob",
+  "expectedPrincipalId": "11F1DA81D3E789B29A098E5D4C15B1E0",
+  "suppliedPrincipalId": "11F1DA81D3E6621E9A098E5D4C15B1E0",
+  "request": {
+    "method": "POST",
+    "path": "/orders/shop/whoami",
+    "body": {
+      "userId": "11F1DA81D3E6621E9A098E5D4C15B1E0"
+    }
+  },
+  "status": 200,
+  "response": {
+    "resultSets": [
+      {
+        "type": "OrdersShopWhoami",
+        "items": [
+          {
+            "result": {
+              "ok": true,
+              "principalId": "11F1DA81D3E789B29A098E5D4C15B1E0"
+            }
+          }
+        ],
+        "_metadata": {
+          "columns": [
+            {
+              "name": "result",
+              "type": "JSON"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "extractedResult": {
+    "ok": true,
+    "principalId": "11F1DA81D3E789B29A098E5D4C15B1E0"
+  }
+}

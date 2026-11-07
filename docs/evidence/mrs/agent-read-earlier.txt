@@ -1,0 +1,12 @@
+Earlier read answer, November 4, 2026
+Build: the first implementation, before the CLI refactor. Model: llama3.1:latest.
+The items and status match order 1001, but the source data has no currency code and
+the system prompt told the model not to invent one. The recorded November 7 read did
+not repeat this mistake.
+
+Assistant: Your order 1001 contains two items:
+
+* Mechanical Keyboard (KB-001) - quantity: 2, unit price: $149.00
+* Wireless Mouse (MS-002) - quantity: 1, unit price: $49.50
+
+The current status of your order is PROCESSING.
