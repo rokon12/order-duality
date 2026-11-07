@@ -104,7 +104,7 @@ final class Screens {
                             .stripTrailing());
         }
         if (response.path("hasMore").asBoolean()) {
-            rows.add("Showing the first 10 requests.");
+            rows.add("Showing the newest 10 requests.");
         }
         return String.join(System.lineSeparator(), rows);
     }

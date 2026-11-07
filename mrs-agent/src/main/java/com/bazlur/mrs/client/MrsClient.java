@@ -77,8 +77,9 @@ public final class MrsClient {
     }
 
     /**
-     * Signs in and keeps the means to sign in again, because MRS bearer tokens last 15 minutes. The
-     * supplier is asked only during a sign-in, so the client holds no password between them.
+     * Signs in and keeps the means to sign in again, because MRS bearer tokens expire: after 15
+     * minutes in the tested deployment. The supplier is asked only during a sign-in, so the client
+     * retains no extra password copy between them.
      */
     public MrsClient login(String username, Supplier<char[]> password) throws Exception {
         if (!username.matches("[A-Za-z0-9_.-]{1,80}"))
@@ -180,7 +181,11 @@ public final class MrsClient {
     }
 
     public JsonNode cancellations() throws Exception {
-        return request("GET", "/shop/requests?limit=10", null);
+        // Every request expires ten minutes after it is created, so this is newest first.
+        String query =
+                URLEncoder.encode(
+                        "{\"$orderby\":{\"expiresAt\":\"DESC\"}}", StandardCharsets.UTF_8);
+        return request("GET", "/shop/requests?limit=10&q=" + query, null);
     }
 
     public JsonNode call(Operation operation, Map<String, ?> arguments) throws Exception {

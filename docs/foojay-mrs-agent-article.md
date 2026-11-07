@@ -10,7 +10,7 @@ That changes the problem. Reading an order requires deciding which information t
 
 I extended the project with MySQL REST Service, or MRS, and a separate Java agent module. The model can read the authenticated customer's orders and create a pending cancellation request. A separate application path reviews and confirms that request. MySQL checks the current order state inside the transaction that performs the cancellation.
 
-The example uses real HTTPS endpoints, MRS authentication, ownership checks, and a local language model. The tests below show what this boundary enforces and where the application still has work to do. Code excerpts are trimmed for reading; the links go to the complete files and captured outputs at the tested revision.
+The example uses real HTTPS endpoints, MRS authentication, ownership checks, and a local language model. The sections below show what this boundary enforces and where the application still has work to do. Code excerpts are trimmed for reading; the links go to the complete files and captured outputs at the tested revision.
 
 ## What changes from the previous application
 
@@ -96,7 +96,7 @@ CREATE OR REPLACE REST VIEW /orders AS order_demo.order_summaries {
 
 These are MySQL Shell MRS statements. The bootstrap script applies them through the MRS plugin; they are not ordinary server SQL to send through JDBC.
 
-The Java list operation requests the newest ten orders with a fixed sort order. It does not accept a model-generated filter. `@ROWOWNERSHIP` restricts the results to the authenticated MRS principal.
+Java requests up to ten of the signed-in customer's most recent orders. The model cannot change the query or select another customer. MRS enforces ownership on the server, returning only rows that belong to the authenticated user.
 
 The cancellation endpoint maps to a specific procedure:
 
@@ -138,11 +138,11 @@ The requester role extends the reader role; the confirmer role has only the conf
 
 The [authentication app](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/mrs/setup.sql) uses MRS-managed accounts with self-registration disabled. Alice and Bob have requester access, a separate account has read-only access, and an executor account can confirm. These are MRS users, not MySQL login accounts.
 
-The MRS plugin bundled with this MySQL Shell has SDK templates for TypeScript, Python, and Swift, but not Java. So the Java client implements the [SCRAM-style login exchange](https://dev.mysql.com/doc/dev/mysql-rest-service/latest/restApi.html) itself, checked against the Python SDK, over verified TLS. For local development, the bootstrap generates a certificate that Java explicitly trusts. Hostname verification stays enabled. The example does not use a permissive trust manager or disable certificate checks.
+The [MRS SDK](https://dev.mysql.com/doc/dev/mysql-rest-service/latest/sdk.html) generates TypeScript and Python clients, and the plugin bundled with this MySQL Shell also carries Swift templates, but there is no Java option. So the Java client implements the [SCRAM-style login exchange](https://dev.mysql.com/doc/dev/mysql-rest-service/latest/restApi.html) itself, checked against the Python SDK, over verified TLS. For local development, the bootstrap generates a certificate that Java explicitly trusts. Hostname verification stays enabled. The example does not use a permissive trust manager or disable certificate checks.
 
-MRS bearer tokens last 15 minutes, which I discovered when a terminal session I had left open came back with HTTP 401. The client now signs in again when a token is rejected, re-reading the password from the environment so that it holds none between sign-ins, and then repeats the request. MRS rejected that request before running it, so repeating it is safe. A [session that waited out the real token lifetime](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/token-renewal.txt) carried on through both clients without a prompt. If the new sign-in also fails, the turn ends with a message asking for a restart.
+In this deployment, MRS bearer tokens last 15 minutes, which I discovered when a terminal session I had left open came back with HTTP 401. The client now signs in again when a token is rejected, re-reading the password from the environment instead of retaining an extra password copy between sign-ins, and then repeats the request. MRS rejected that request before running it, so repeating it is safe. A [session that waited out the real token lifetime](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/token-renewal.txt) carried on through both clients without a prompt. If the new sign-in is rejected with HTTP 401, the turn ends with a message asking for a restart.
 
-Database privileges also matter. The mutation routines run as a locked `order_workflow` account with an order `UPDATE(status)` grant, request-table privileges, and audit insertion. MRS's data-provider role has read access for summaries and cancellation requests, plus execution privileges on the approved routines. `workflow.sql` grants the column reads; the [remaining grants](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/provider-grants.txt) appear when the MRS definitions are applied. The API exposes no generic order update or delete operation.
+Database privileges also matter. The mutation routines run as a locked `order_workflow` account with an order `UPDATE(status)` grant, request-table privileges, and audit insertion. MRS's data-provider role is broader: its [captured grants](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/provider-grants.txt) include `INSERT`, `UPDATE`, and `DELETE` on `orders` and `customer_principals`, alongside reads and routine execution. The API exposes no generic order update or delete operation, but that restriction comes from the MRS endpoint contract, not from an absence of underlying SQL privileges. A compromised provider would have more authority than the agent's three tools.
 
 ## Java gives the model three tools
 
@@ -158,23 +158,25 @@ public String getOrder(@P("Positive integer order ID") long orderId,
 }
 ```
 
-`charge()` counts calls, and a ninth call in a turn does not run; `bounded()` applies a 24,000-character limit to the serialized result. There is no SQL, URL, customer ID, or confirmation parameter in those [tool definitions](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/mrs-agent/src/main/java/com/bazlur/mrs/agent/OrderTools.java). The tools receive an `OrderAccess` implementation already bound to the authenticated customer's HTTP client, and that interface has no confirmation method at all.
+`charge()` counts calls and prevents a ninth call in a turn from reaching the order service; `bounded()` applies a 24,000-character limit to the serialized result. There is no SQL, URL, customer ID, or confirmation parameter in those [tool definitions](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/mrs-agent/src/main/java/com/bazlur/mrs/agent/OrderTools.java). The tools receive an `OrderAccess` implementation already bound to the authenticated customer's HTTP client, and that interface has no confirmation method at all.
 
 `InvocationParameters` does not appear in the tool schema. LangChain4j's [tools documentation](https://docs.langchain4j.dev/tutorials/tools/) describes it as data the LLM is not aware of, which fits per-turn state: the call budget, the one permitted cancellation target, and a Java-generated retry key.
 
-One AI Service serves the whole session, so a tool object registered with it lives just as long, and any state kept on that object becomes session state. I made that mistake: the second cancellation in a session was refused until the state moved into a `Turn` object created for each question.
+One AI Service serves the whole session, so a tool object registered with it lives just as long, and any state kept on that object becomes session state. I made that mistake: the second cancellation in a session was refused until the state moved into a `Turn` object created for each question. The service method now accepts those parameters:
 
 ```java
 @UserMessage("{{question}}")
 Result<String> chat(@V("question") String question, InvocationParameters params);
 ```
 
+Each question then passes a new `Turn`:
+
 ```java
 var turn = new OrderTools.Turn();
 var result = assistant.chat(question, turn.parameters());
 ```
 
-The named `{{question}}` variable is deliberate. With `@UserMessage` directly on the parameter, LangChain4j treats the customer's text as a template, and a question containing `{{foo}}` throws before the model is called.
+The named `{{question}}` variable is deliberate. With `@UserMessage` directly on the parameter, the tested LangChain4j 1.20.0 path treats the customer's text as a template, and a question containing an unresolved `{{foo}}` throws before the model is called.
 
 This is the request method in the [HTTP-backed adapter](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/mrs-agent/src/main/java/com/bazlur/mrs/client/MrsOrders.java):
 
@@ -213,11 +215,13 @@ HTTP success alone does not mean an order changed.
 
 LangChain4j registers only the three annotated tool methods. A turn is limited to eight tool calls and one distinct cancellation target. Java enforces these budgets, while direct API clients are governed by endpoint permissions and procedure checks. The round limit needs care: LangChain4j 1.20 checks `maxToolCallingRoundTrips` before reading each response, so a setting of 5 lets a turn finish after four tool rounds. A fifth round still runs, then ends the turn without an answer.
 
-I also replaced two LangChain4j defaults. A tool's exception message normally goes to the model, which LangChain4j's documentation warns can leak internal details; here the model receives a fixed failure message, and the details go to a debug log. Invalid tool arguments normally end the turn; here they go back to the model so it can retry. I kept the third default, because a made-up tool name should end the turn when a model tries to call `confirmCancellation`.
+I also replaced two defaults in this synchronous LangChain4j service. A tool's exception message normally goes to the model, which LangChain4j's documentation warns can leak internal details; here the model receives a fixed failure message, and the details go to a debug log. Invalid tool arguments normally end the turn; here they go back to the model so it can retry. I kept the third default, because a made-up tool name should end the turn when a model tries to call `confirmCancellation`.
 
-The application rejects an answer unless at least one tool call in that turn succeeded, which it reads from `Result.toolExecutions()`. That also withholds a tool-free reply to “thanks”: this CLI handles order tasks, and `/help` is answered locally. Requiring a successful call anchors the interaction in an operation, but does not guarantee that the model describes the result correctly.
+The application rejects an answer unless at least one tool call in that turn completed without an execution error, as recorded by `Result.toolExecutions()`. A normal `ok:false` business denial still counts as a completed call. This also withholds a tool-free reply to “thanks”: the CLI handles order tasks, and `/help` is answered locally. Requiring a completed call anchors the interaction in an operation, but does not guarantee that the model describes the result correctly.
 
-The interactive session also keeps a 20-message [LangChain4j chat memory](https://docs.langchain4j.dev/tutorials/chat-memory/), so “What is its status now?” resolves to the order just discussed. A tool-using turn takes four messages, so that covers about four earlier turns. Memory is context, not state: the system prompt tells the model to check tools again for current facts, the budgets and retry key still reset each turn, and a failed turn restores the previous messages so that a rejected answer does not become conversational fact. It has a cost. Tool results stay in the model's context, so injected text in an order has several turns to work instead of one. `/clear` forgets the conversation.
+The interactive session also keeps a 20-message [LangChain4j chat memory](https://docs.langchain4j.dev/tutorials/chat-memory/), so a follow-up such as “What is its status now?” can refer to the order just discussed. A simple turn with one tool call adds four messages; extra tool calls and rounds consume the window faster. This is a message limit, not a token budget, so large documents can still exceed the model's context capacity.
+
+The system prompt tells the model to check tools again for current facts. Budgets and retry keys reset each turn, and a failed turn restores the previous messages so that a rejected answer does not become conversational fact. Restoring memory does not undo an API operation that already succeeded: inspect `/requests` before retrying a failed cancellation turn. Retaining tool results also gives injected business text several turns to influence the model instead of one. `/clear` forgets the conversation and the selected request, while saved requests remain in MySQL.
 
 ## A cancellation request is a database record
 
@@ -250,6 +254,8 @@ There is a deliberate trust handoff here: MRS injects the **executor's** identit
 Both clients live in one Java process, but the model's tools never receive the executor client, passwords, or bearer tokens. MRS rejects confirmation with customer credentials, and the live integration tests verify that denial. This split limits the model-facing path; a compromised process or stolen executor credential can bypass human review.
 
 A confirmation tool behind a human approval gate is another valid design; LangChain4j describes [human-in-the-loop workflows](https://docs.langchain4j.dev/tutorials/agents/#human-in-the-loop). Here, keeping confirmation outside tool dispatch lets every model tool operate with the customer credential, which lacks confirmation permission at MRS. The trusted terminal path alone uses the executor client.
+
+The automated tests check tool registration and backend authorization, not how well a real model resists prompt injection. An injected instruction could still create an unwanted pending request through an available tool. The review screen is the check on that today; a real deployment would also need stronger intent handling and abuse controls.
 
 ## What the real run produced
 
@@ -293,34 +299,11 @@ REQUESTED    1
 CANCELLED    1
 ```
 
-The language model also made mistakes, and that transcript shows one: it promised to keep the customer updated and said the system might deny the request, although the CLI sends no updates and has no denial path. [Asked to cancel order 1001](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/agent-request-no-reason.txt), it said the order was “still in the PENDING state” when the order was `PROCESSING`, confusing the order with the request. An [earlier build's answer](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/agent-read-earlier.txt) added dollar signs to prices that have no currency code, despite a prompt telling it not to; the [recorded read](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/agent-read.txt) did not repeat that.
+The language model also made mistakes, and that transcript shows one: it promised status updates and implied an approval process beyond the terminal interaction. The CLI sends no updates; approval is the customer's explicit terminal action. The confirmation procedure can still reject an expired, stale, or ineligible request. [Asked to cancel order 1001](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/agent-request-no-reason.txt), it said the order was “still in the PENDING state” when the order was `PROCESSING`, confusing the order with the request. An [earlier build's answer](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/agent-read-earlier.txt) added dollar signs to prices that have no currency code, despite a prompt telling it not to; the [recorded read](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/agent-read.txt) did not repeat that.
 
 The mistake that changed the design came from a bare “cancel order 1003.” The model [invented a reason](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/invented-reason.txt), “I no longer need this order,” and the review screen showed it as if the customer had said it. The system prompt and tool description now ask for the customer's own words, or exactly `Not stated`, and the recorded `Cancel order 1001.` request stored `Not stated`. That is an instruction, not a guarantee, which is why the review screen labels the reason and shows the order.
 
 Those errors did not grant the model another database capability. They still affect the user experience. A permission boundary does not make generated prose reliable.
-
-## Tests against the actual service
-
-The acceptance run started from a clean clone with an empty, separate Docker volume. It used Java 25, the digest-pinned MySQL 26.10.0 Community image (a multi-arch digest, tested here on ARM64), the MRS component, and verified HTTPS. The captured results are dated November 7, 2026.
-
-| Suite and captured results | Passed |
-|---|---:|
-| [Java unit tests](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/fresh-java-tests.txt) for tools, memory, and the CLI | 52 |
-| [Java integration tests](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/fresh-java-tests.txt) | 10 |
-| [Direct REST and SQL boundary tests](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/boundary-results.json) | 10 |
-
-Several results are more useful than the total:
-
-- Missing or tampered authentication received 401. A reader requesting a cancellation, a customer invoking confirmation, and an executor reading orders received 403.
-- Another customer's GET resource returned 404. Forging the procedure's identity parameter did not change the authenticated principal.
-- Generic order mutations and unexposed resources were unavailable through the configured API.
-- Concurrent request retries produced one request. Concurrent confirmations produced one cancellation audit event.
-- Expired requests, stale order versions, and shipped orders could not be confirmed.
-- Cancellation racing a **conditional** shipping update ended in one terminal state.
-
-The prompt-injection test uses a scripted model to attempt an unregistered confirmation tool after receiving malicious business text, and the turn ends at that call. A separate test calls the backend confirmation endpoint with the customer credential. These check tool registration and backend authorization, not how well a real model resists prompt injection. Likewise, the shipping race covers a conditional SQL update, not an external warehouse or unrestricted administrator writes.
-
-An injected instruction could still cause an unwanted pending request through an available tool. The review screen is the check on that today; a real deployment would also need stronger intent handling and abuse controls.
 
 ## Running the example
 
@@ -349,6 +332,7 @@ Start Ollama if needed (`ollama serve` in a separate terminal), then install the
 
 ```bash
 ollama pull llama3.1:8b
+export OLLAMA_MODEL=llama3.1:8b
 java -jar mrs-agent/target/mrs-agent.jar \
   --ask 'What is in my order 1001?'
 ```
@@ -369,13 +353,13 @@ mvn -B -ntp -f mrs-agent/pom.xml verify -Pmrs-integration
 python3 scripts/mrs-verify.py
 ```
 
-The live suites fail when the service is unavailable; they do not substitute mocks. Their SQL access belongs to the fixture and readback harness, not the agent runtime. The project guide is [docs/mrs-agent.md](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/mrs-agent.md), and captured outputs are under [docs/evidence/mrs/](https://github.com/rokon12/order-duality/tree/foojay-mrs-article/docs/evidence/mrs).
+The live suites fail when the service is unavailable; they do not substitute mocks. Their SQL access belongs to the fixture and readback harness, not the agent runtime. The project guide is [docs/mrs-agent.md](https://github.com/rokon12/order-duality/blob/main/docs/mrs-agent.md), and captured outputs are under [docs/evidence/mrs/](https://github.com/rokon12/order-duality/tree/foojay-mrs-article/docs/evidence/mrs).
 
 ## Where I would use this architecture
 
 MRS removed the need for handwritten Java controllers and CRUD repositories for the exposed resources. The database owns the document read, the API metadata describes the resources, and a mobile client or web application could use the same scoped endpoints without inheriting JDBC credentials.
 
-It did not remove the code. Without a Java SDK, `MrsClient` is about 240 lines, including the login exchange and session renewal. The cancellation policy is about 200 lines of SQL in `workflow.sql`: MRS did not decide which statuses qualify, how requests expire, or what happens when shipping wins a race. Those rules are explicit procedures because the relevant data and transaction live in one database.
+MRS did not remove the need for code, though. Without a Java SDK, `MrsClient` is about 240 lines, including the login exchange and session renewal. The cancellation policy is about 200 lines of SQL in `workflow.sql`: MRS did not decide which statuses qualify, how requests expire, or what happens when shipping wins a race. Those rules are explicit procedures because the relevant data and transaction live in one database.
 
 For production, I would need managed secrets, certificate renewal, an identity lifecycle, monitoring, and request-level abuse controls. This demo reads passwords from environment variables, and its certificate expires after 30 days. No throughput or latency benchmark was performed, and the native-view query-plan concerns from the earlier project still need measurement on realistic data volumes. For stronger isolation, I would move confirmation into a separate service bound to authenticated user consent.
 
