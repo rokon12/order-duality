@@ -10,7 +10,7 @@ That changes the problem. Reading an order requires deciding which information t
 
 I extended the project with MySQL REST Service, or MRS, and a separate Java agent module. The model can read the authenticated customer's orders and create a pending cancellation request. A separate application path reviews and confirms that request. MySQL checks the current order state inside the transaction that performs the cancellation.
 
-The example uses real HTTPS endpoints, MRS authentication, ownership checks, and a local language model. The tests below show what this boundary enforces and where the application still has work to do. Code excerpts are trimmed for reading; the links go to the complete files and captured outputs at the tested revision.
+The example uses real HTTPS endpoints, MRS authentication, ownership checks, and a local language model. The sections below show what this boundary enforces and where the application still has work to do. Code excerpts are trimmed for reading; the links go to the complete files and captured outputs at the tested revision.
 
 ## What changes from the previous application
 
@@ -255,6 +255,8 @@ Both clients live in one Java process, but the model's tools never receive the e
 
 A confirmation tool behind a human approval gate is another valid design; LangChain4j describes [human-in-the-loop workflows](https://docs.langchain4j.dev/tutorials/agents/#human-in-the-loop). Here, keeping confirmation outside tool dispatch lets every model tool operate with the customer credential, which lacks confirmation permission at MRS. The trusted terminal path alone uses the executor client.
 
+The automated tests check tool registration and backend authorization, not how well a real model resists prompt injection. An injected instruction could still create an unwanted pending request through an available tool. The review screen is the check on that today; a real deployment would also need stronger intent handling and abuse controls.
+
 ## What the real run produced
 
 The [recorded session](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/demo-session.txt) used `llama3.1:8b` on a fresh deployment, in a real terminal. An `expect` script supplied the input, including the approval, so it exercises the path rather than a person reading the screen:
@@ -302,29 +304,6 @@ The language model also made mistakes, and that transcript shows one: it promise
 The mistake that changed the design came from a bare “cancel order 1003.” The model [invented a reason](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/invented-reason.txt), “I no longer need this order,” and the review screen showed it as if the customer had said it. The system prompt and tool description now ask for the customer's own words, or exactly `Not stated`, and the recorded `Cancel order 1001.` request stored `Not stated`. That is an instruction, not a guarantee, which is why the review screen labels the reason and shows the order.
 
 Those errors did not grant the model another database capability. They still affect the user experience. A permission boundary does not make generated prose reliable.
-
-## Tests against the actual service
-
-The acceptance run started from a clean clone with an empty, separate Docker volume. It used Java 25, the digest-pinned MySQL 26.10.0 Community image (a multi-arch digest, tested here on ARM64), the MRS component, and verified HTTPS. The captured results are dated November 7, 2026.
-
-| Suite and captured results | Passed |
-|---|---:|
-| [Java unit tests](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/fresh-java-tests.txt) for tools, memory, and the CLI | 52 |
-| [Java integration tests](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/fresh-java-tests.txt) | 10 |
-| [Direct REST and SQL boundary tests](https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/boundary-results.json) | 10 |
-
-Several results are more useful than the total:
-
-- Missing or tampered authentication received 401. A reader requesting a cancellation, a customer invoking confirmation, and an executor reading orders received 403.
-- Another customer's GET resource returned 404. Forging the procedure's identity parameter did not change the authenticated principal.
-- Generic order mutations and unexposed resources were unavailable through the configured API.
-- Concurrent request retries produced one request. Concurrent confirmations produced one cancellation audit event.
-- Expired requests, stale order versions, and shipped orders could not be confirmed.
-- Cancellation racing a **conditional** shipping update ended in one terminal state.
-
-The prompt-injection test uses a scripted model to attempt an unregistered confirmation tool after receiving malicious business text, and the turn ends at that call. A separate test calls the backend confirmation endpoint with the customer credential. These check tool registration and backend authorization, not how well a real model resists prompt injection. Likewise, the shipping race covers a conditional SQL update, not an external warehouse or unrestricted administrator writes.
-
-An injected instruction could still cause an unwanted pending request through an available tool. The review screen is the check on that today; a real deployment would also need stronger intent handling and abuse controls.
 
 ## Running the example
 
@@ -380,7 +359,7 @@ The live suites fail when the service is unavailable; they do not substitute moc
 
 MRS removed the need for handwritten Java controllers and CRUD repositories for the exposed resources. The database owns the document read, the API metadata describes the resources, and a mobile client or web application could use the same scoped endpoints without inheriting JDBC credentials.
 
-It did not remove the code. Without a Java SDK, `MrsClient` is about 240 lines, including the login exchange and session renewal. The cancellation policy is about 200 lines of SQL in `workflow.sql`: MRS did not decide which statuses qualify, how requests expire, or what happens when shipping wins a race. Those rules are explicit procedures because the relevant data and transaction live in one database.
+MRS did not remove the need for code, though. Without a Java SDK, `MrsClient` is about 240 lines, including the login exchange and session renewal. The cancellation policy is about 200 lines of SQL in `workflow.sql`: MRS did not decide which statuses qualify, how requests expire, or what happens when shipping wins a race. Those rules are explicit procedures because the relevant data and transaction live in one database.
 
 For production, I would need managed secrets, certificate renewal, an identity lifecycle, monitoring, and request-level abuse controls. This demo reads passwords from environment variables, and its certificate expires after 30 days. No throughput or latency benchmark was performed, and the native-view query-plan concerns from the earlier project still need measurement on realistic data volumes. For stronger isolation, I would move confirmation into a separate service bound to authenticated user consent.
 
