@@ -1,0 +1,223 @@
+{
+  "checked_at": "2026-11-07T03:34:33-05:00",
+  "main_commit": "15882fc6db7ba01cbc6a2ea97e05a3310871c5dd",
+  "published_tag": "foojay-mrs-article",
+  "published_tag_object": "383318678abbb757a8de5bcd668ef4127799aa78",
+  "published_tag_commit": "2b5f4bbc62d2b9f6a77adfa081a9bc5ccf5f7736",
+  "method": "Unauthenticated HTTP HEAD for all GitHub URLs, GET of 19 raw files, and independent Git fetch of the published tag. Compared raw content to the fetched Git objects and merged main.",
+  "github_url_count": 22,
+  "file_count": 19,
+  "directory_count": 2,
+  "clone_url_count": 1,
+  "all_passed": true,
+  "links": [
+    {
+      "url": "https://github.com/rokon12/order-duality.git",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality",
+      "passed": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/agent-read-earlier.txt",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/agent-read-earlier.txt",
+      "passed": true,
+      "raw_http_status": 200,
+      "path": "docs/evidence/mrs/agent-read-earlier.txt",
+      "matches_published_tag": true,
+      "matches_main_at_review": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/agent-read.txt",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/agent-read.txt",
+      "passed": true,
+      "raw_http_status": 200,
+      "path": "docs/evidence/mrs/agent-read.txt",
+      "matches_published_tag": true,
+      "matches_main_at_review": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/agent-request-no-reason.txt",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/agent-request-no-reason.txt",
+      "passed": true,
+      "raw_http_status": 200,
+      "path": "docs/evidence/mrs/agent-request-no-reason.txt",
+      "matches_published_tag": true,
+      "matches_main_at_review": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/boundary-results.json",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/boundary-results.json",
+      "passed": true,
+      "raw_http_status": 200,
+      "path": "docs/evidence/mrs/boundary-results.json",
+      "matches_published_tag": true,
+      "matches_main_at_review": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/demo-readback.txt",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/demo-readback.txt",
+      "passed": true,
+      "raw_http_status": 200,
+      "path": "docs/evidence/mrs/demo-readback.txt",
+      "matches_published_tag": true,
+      "matches_main_at_review": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/demo-session.txt",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/demo-session.txt",
+      "passed": true,
+      "raw_http_status": 200,
+      "path": "docs/evidence/mrs/demo-session.txt",
+      "matches_published_tag": true,
+      "matches_main_at_review": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/forged-identity-example.json",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/forged-identity-example.json",
+      "passed": true,
+      "raw_http_status": 200,
+      "path": "docs/evidence/mrs/forged-identity-example.json",
+      "matches_published_tag": true,
+      "matches_main_at_review": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/fresh-java-tests.txt",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/fresh-java-tests.txt",
+      "passed": true,
+      "raw_http_status": 200,
+      "path": "docs/evidence/mrs/fresh-java-tests.txt",
+      "matches_published_tag": true,
+      "matches_main_at_review": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/invented-reason.txt",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/invented-reason.txt",
+      "passed": true,
+      "raw_http_status": 200,
+      "path": "docs/evidence/mrs/invented-reason.txt",
+      "matches_published_tag": true,
+      "matches_main_at_review": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/provider-grants.txt",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/provider-grants.txt",
+      "passed": true,
+      "raw_http_status": 200,
+      "path": "docs/evidence/mrs/provider-grants.txt",
+      "matches_published_tag": true,
+      "matches_main_at_review": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/token-renewal.txt",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/evidence/mrs/token-renewal.txt",
+      "passed": true,
+      "raw_http_status": 200,
+      "path": "docs/evidence/mrs/token-renewal.txt",
+      "matches_published_tag": true,
+      "matches_main_at_review": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/mrs-agent.md",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/docs/mrs-agent.md",
+      "passed": true,
+      "raw_http_status": 200,
+      "path": "docs/mrs-agent.md",
+      "matches_published_tag": true,
+      "matches_main_at_review": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/mrs-agent/src/main/java/com/bazlur/mrs/agent/OrderTools.java",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/mrs-agent/src/main/java/com/bazlur/mrs/agent/OrderTools.java",
+      "passed": true,
+      "raw_http_status": 200,
+      "path": "mrs-agent/src/main/java/com/bazlur/mrs/agent/OrderTools.java",
+      "matches_published_tag": true,
+      "matches_main_at_review": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/mrs-agent/src/main/java/com/bazlur/mrs/client/MrsClient.java",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/mrs-agent/src/main/java/com/bazlur/mrs/client/MrsClient.java",
+      "passed": true,
+      "raw_http_status": 200,
+      "path": "mrs-agent/src/main/java/com/bazlur/mrs/client/MrsClient.java",
+      "matches_published_tag": true,
+      "matches_main_at_review": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/mrs-agent/src/main/java/com/bazlur/mrs/client/MrsOrders.java",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/mrs-agent/src/main/java/com/bazlur/mrs/client/MrsOrders.java",
+      "passed": true,
+      "raw_http_status": 200,
+      "path": "mrs-agent/src/main/java/com/bazlur/mrs/client/MrsOrders.java",
+      "matches_published_tag": true,
+      "matches_main_at_review": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/mrs-agent/src/main/java/com/bazlur/mrs/workflow/Confirmation.java",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/mrs-agent/src/main/java/com/bazlur/mrs/workflow/Confirmation.java",
+      "passed": true,
+      "raw_http_status": 200,
+      "path": "mrs-agent/src/main/java/com/bazlur/mrs/workflow/Confirmation.java",
+      "matches_published_tag": true,
+      "matches_main_at_review": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/mrs/endpoints.sql",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/mrs/endpoints.sql",
+      "passed": true,
+      "raw_http_status": 200,
+      "path": "mrs/endpoints.sql",
+      "matches_published_tag": true,
+      "matches_main_at_review": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/mrs/setup.sql",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/mrs/setup.sql",
+      "passed": true,
+      "raw_http_status": 200,
+      "path": "mrs/setup.sql",
+      "matches_published_tag": true,
+      "matches_main_at_review": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/mrs/workflow.sql",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/blob/foojay-mrs-article/mrs/workflow.sql",
+      "passed": true,
+      "raw_http_status": 200,
+      "path": "mrs/workflow.sql",
+      "matches_published_tag": true,
+      "matches_main_at_review": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/tree/foojay-mrs-article",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/tree/foojay-mrs-article",
+      "passed": true
+    },
+    {
+      "url": "https://github.com/rokon12/order-duality/tree/foojay-mrs-article/docs/evidence/mrs",
+      "http_status": 200,
+      "final_url": "https://github.com/rokon12/order-duality/tree/foojay-mrs-article/docs/evidence/mrs",
+      "passed": true
+    }
+  ]
+}
