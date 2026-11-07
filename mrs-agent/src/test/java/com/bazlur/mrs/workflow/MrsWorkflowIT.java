@@ -278,6 +278,21 @@ class MrsWorkflowIT {
     }
 
     @Test
+    void requestListShowsTheNewestRequestsFirst() throws Exception {
+        var orders = new MrsOrders(alice);
+        String newest = "";
+        for (int i = 0; i < 11; i++) {
+            newest =
+                    orders.requestCancellation(order, "Request " + i, UUID.randomUUID())
+                            .path("requestId")
+                            .asString();
+        }
+        var listed = alice.cancellations();
+        assertTrue(listed.path("hasMore").asBoolean());
+        assertEquals(newest, listed.at("/items/0/requestId").asString());
+    }
+
+    @Test
     void stateChangeBetweenReviewAndConfirmationIsRejected() throws Exception {
         var request = new MrsOrders(alice).requestCancellation(order, "Test", UUID.randomUUID());
         var confirmation = new Confirmation(alice, executor);

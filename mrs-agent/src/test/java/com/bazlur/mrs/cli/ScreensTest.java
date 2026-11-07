@@ -123,7 +123,7 @@ class ScreensTest {
                 Screens.requests(
                                 Json.parse(
                                         "{\"items\":[{\"orderId\":1,\"state\":\"PENDING\"}],\"hasMore\":true}"))
-                        .contains("Showing the first 10"));
+                        .contains("Showing the newest 10"));
     }
 
     @Test

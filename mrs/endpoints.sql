@@ -12,7 +12,7 @@ CREATE REST VIEW /requests AS order_demo.cancellation_requests {
   orderId: order_id,
   reason: reason,
   state: state,
-  expiresAt: expires_at
+  expiresAt: expires_at @SORTABLE
 } AUTHENTICATION REQUIRED ITEMS PER PAGE 10;
 CREATE REST PROCEDURE /whoami AS order_demo.whoami
 PARAMETERS { userId: p_user_id @IN @ROWOWNERSHIP }
