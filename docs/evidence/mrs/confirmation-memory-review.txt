@@ -1,0 +1,41 @@
+Confirmation UX and conversation memory validation
+Date: 2026-11-07 (America/Toronto)
+Scope: uncommitted working-tree changes based on 293382a
+
+Build and automated checks
+- mvn -B -ntp -o -Dmaven.repo.local=.m2 -f mrs-agent/pom.xml verify -Pmrs-integration
+  PASS: 11 Java unit tests, 6 live MRS integration tests; zero failures, errors,
+  or skipped tests. Executable JAR rebuilt.
+- python3 scripts/mrs-verify.py
+  PASS: 10 REST/SQL boundary tests.
+- Added checks for multi-turn context, session isolation, memory eviction and
+  clearing, failed-turn memory restoration, fresh per-turn retry keys, explicit
+  yes/y approval, and re-review after the stored reason changes.
+- Existing checks still enforce three scoped model tools, no model confirmation
+  capability, customer-role denial at MRS, ownership, and state revalidation.
+- LangChain4j 1.20 retains a 20-message memory window. Its initial model request
+  appends the current user message to the snapshot (21 messages at capacity in
+  the scripted test). This is a message window, not a token-budget guarantee.
+
+Live terminal smoke test
+Model: existing local llama3.1:latest
+Data: disposable customer-42 order 12093611195; removed after the test.
+- Bare yes at the main prompt displayed guidance; it was not sent to the model.
+- /confirm before a request was selected displayed guidance.
+- Asked to show the test order, then "What is its status now?". The model
+  resolved the follow-up to the same order and returned PROCESSING.
+- "Cancel that order. I ordered it by mistake." produced a PENDING request
+  for the same test order. The CLI retained its ID outside conversation memory.
+- /confirm without a UUID displayed the stored order and reason, then [y/N].
+- Empty input declined. SQL readback: order PROCESSING, request PENDING,
+  zero CANCELLED audit events.
+- Retried /confirm. Typing CONFIRM re-prompted with a yes/no explanation.
+- Typing y returned CONFIRMED. SQL readback: order CANCELLED, request CONFIRMED,
+  exactly one CANCELLED audit event.
+- Another "What is its status now?" returned the new CANCELLED state.
+- /clear cleared conversation and the shortcut target; /confirm then reported
+  that no request was selected. The test process exited normally.
+
+The historical article and November 4 acceptance captures remain pinned to the
+earlier implementation. This record describes the new local behavior; no commit
+or push was made for these changes.

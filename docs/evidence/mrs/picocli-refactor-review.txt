@@ -1,0 +1,66 @@
+Java 25 / picocli package refactor verification
+Date: 2026-11-07 (America/Toronto)
+Repository base: 293382aeb0e2ca7d1f98344ef41cac734ea04d79
+Scope: uncommitted working-tree changes, including the preceding yes/no confirmation
+and LangChain4j conversation-memory changes. This is a local verification record,
+not evidence that these changes have been published.
+
+Runtime: Oracle GraalVM Java 25.0.2, Maven 3.9.11.
+CLI: picocli 4.7.7; SLF4J with slf4j-simple.
+Formatter: Spotless Maven 3.10.4, Google Java Format 1.30.0, AOSP style.
+
+Commands run from the repository root:
+  mvn -B -ntp -Dmaven.repo.local=.m2 -f mrs-agent/pom.xml spotless:apply
+  mvn -B -ntp -Dmaven.repo.local=.m2 -f mrs-agent/pom.xml clean verify -Pmrs-integration
+
+BUILD SUCCESS. Compiler release 25. No preview features.
+  com.bazlur.mrs.agent.OrderAgentTest:          11 passed
+  com.bazlur.mrs.cli.OrderCommandTest:           5 passed
+  com.bazlur.mrs.cli.InteractiveShellTest:       1 passed
+  com.bazlur.mrs.workflow.MrsWorkflowIT:         7 passed
+Total: 24 tests, 0 failures, 0 errors, 0 skipped.
+Spotless: all 15 Java source/test files clean.
+All 20 application class files have major version 69, minor version 0 (Java 25).
+
+The CLI tests exercise help/version without application startup, mutually exclusive
+options, missing/invalid/overflowing IDs, empty/oversized questions, disabled
+argument-file expansion, and sanitized error logs. Interactive routing tests keep
+slash commands and misplaced approvals outside the model.
+
+Live HTTPS/MRS integration exercises ownership, role denial, request changes,
+order state changes, explicit yes approval, idempotent replay, and the absence of
+JDBC/DataSource classes. The new picocli workflow test reviews its own fixture,
+declines with Enter, reviews again, rejects "maybe", and confirms with "y".
+Readback proves the order remains PROCESSING before approval, then becomes
+CANCELLED with exactly one cancellation audit event. Its fixture is removed.
+
+Packaged JAR smoke checks, using the local MRS service:
+  --help:               exit 0; usage logged on stderr
+  --version:            exit 0; version logged on stderr
+  --list:               exit 0; order summaries logged on stderr
+  --read 1001:          exit 0; order document logged on stderr
+  --requests:           exit 0; requests logged on stderr
+  --list --requests:    exit 2; sanitized usage error logged on stderr
+All six checks verified empty stdout. No direct print/println/printf calls were
+found in module sources.
+
+Read-only packaged-JAR terminal session with OLLAMA_MODEL=llama3.1:latest:
+  /help                  -> generated session help through the logger
+  /confirm --help        -> generated confirmation syntax through the logger
+  Show order 1001.       -> returned its items and CANCELLED status
+  What is its current status?
+                         -> resolved the follow-up to order 1001; reported CANCELLED
+  /clear                 -> acknowledged cleared conversation
+  /quit                  -> process exited 0
+This session performed no cancellations. The real model's prose remains variable;
+the deterministic memory/tool tests establish the asserted context and dispatch
+behavior. The existing Python REST boundary suite was not rerun for this Java-only
+refactor; earlier results remain in their original evidence files.
+
+Generated reports:
+  mrs-agent/target/surefire-reports/
+  mrs-agent/target/failsafe-reports/
+
+Maven emitted its existing Guice sun.misc.Unsafe deprecation warning on Java 25;
+it did not affect compilation, tests, formatting, or the packaged CLI checks.
+No commit or push was performed.
