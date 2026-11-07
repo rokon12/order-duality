@@ -1,14 +1,15 @@
 {
-  "capturedOn": "2026-11-05",
-  "deployment": "local order-duality-mrs demo",
-  "implementation": "2516fae6f35fe6e16fc6de3a0744db40be5c08a4",
+  "capturedOn": "2026-11-07",
+  "deployment": "fresh order-mrs-article acceptance deployment",
+  "implementation": "foojay-mrs-article",
   "authenticatedAs": "bob",
-  "expectedPrincipalId": "11F1D8A82520754D9812C65D2B8D2BD3",
+  "expectedPrincipalId": "11F1DA81D3E789B29A098E5D4C15B1E0",
+  "suppliedPrincipalId": "11F1DA81D3E6621E9A098E5D4C15B1E0",
   "request": {
     "method": "POST",
     "path": "/orders/shop/whoami",
     "body": {
-      "userId": "11F1D8A8251FA90C9812C65D2B8D2BD3"
+      "userId": "11F1DA81D3E6621E9A098E5D4C15B1E0"
     }
   },
   "status": 200,
@@ -20,7 +21,7 @@
           {
             "result": {
               "ok": true,
-              "principalId": "11F1D8A82520754D9812C65D2B8D2BD3"
+              "principalId": "11F1DA81D3E789B29A098E5D4C15B1E0"
             }
           }
         ],
@@ -37,6 +38,6 @@
   },
   "extractedResult": {
     "ok": true,
-    "principalId": "11F1D8A82520754D9812C65D2B8D2BD3"
+    "principalId": "11F1DA81D3E789B29A098E5D4C15B1E0"
   }
 }

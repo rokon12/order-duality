@@ -36,12 +36,11 @@ For real inference, start Ollama and select an installed tool-capable model:
 ```bash
 ollama serve  # omit if already running
 ollama pull llama3.1:8b
-export OLLAMA_MODEL=llama3.1:8b
 java -jar mrs-agent/target/mrs-agent.jar --ask 'What is in my order 1001?'
 java -jar mrs-agent/target/mrs-agent.jar --ask 'Cancel order 1003. I ordered it by mistake.'
 ```
 
-Our recorded local run used the already-installed `llama3.1:latest`; see the evidence files for its actual output. If `ollama list` shows that name instead of `llama3.1:8b`, use `export OLLAMA_MODEL=llama3.1:latest` to reuse it. Model tags can change and answers are not deterministic guarantees.
+Our recorded run used `llama3.1:8b`; see the evidence files for its actual output. Set `OLLAMA_MODEL` to use another installed tool-capable model. Model tags can change and answers are not deterministic guarantees.
 
 For confirmation, start interactive mode in a terminal:
 
@@ -163,7 +162,7 @@ A concurrent eligible-order change invalidates the recorded version. Shipping ma
 
 ## Compatibility findings
 
-Tested with MySQL **26.10.0 Community**, its bundled MySQL Shell/MRS plugin, the in-server MRS component, and ARM64 Docker. The image is pinned by digest in `compose.mrs.yml`. MRS does not require a Router process for this deployment.
+Tested with MySQL **26.10.0 Community**, its bundled MySQL Shell/MRS plugin, and the in-server MRS component, on ARM64 Docker. `compose.mrs.yml` pins a multi-arch image digest that also includes amd64, although the recorded runs used ARM64. MRS does not require a Router process for this deployment.
 
 The existing native views load unchanged. MySQL rejects `CREATE VIEW ... AS SELECT data FROM orders_dv` with **6504**, so a conventional wrapper view cannot add an ownership column around that native document. The implemented path is a checked MRS procedure that queries `orders_dv` directly. Its nested JSON and native `_metadata.etag` reach Java intact. This is native duality through a procedure endpoint, not transparent REST CRUD over the duality view. Cancellation is a relational transaction, not a full-document replacement.
 
@@ -171,7 +170,7 @@ A definer-security join projection failed under the provider identity in this sp
 
 MRS REST data mapping views (`CREATE REST VIEW`) and native server views (`CREATE JSON DUALITY VIEW`) are different mechanisms. This project intentionally documents which one is used at each endpoint.
 
-References: [MRS component setup](https://dev.mysql.com/doc/dev/mysql-rest-service/latest/#installing-the-mrs-server-component), [MRS SQL reference](https://dev.mysql.com/doc/dev/mysql-rest-service/latest/sql.html), [authentication protocol](https://dev.mysql.com/doc/dev/mysql-rest-service/latest/restApi.html#authenticate-a-rest-user), and the bundled `mrs_plugin/sdk/python/mrs_base_classes.py` implementation used to check the SCRAM exchange.
+References: [MRS component setup](https://dev.mysql.com/doc/dev/mysql-rest-service/latest/#installing-the-mrs-server-component), [MRS SQL reference](https://dev.mysql.com/doc/dev/mysql-rest-service/latest/sql.html), [authentication protocol](https://dev.mysql.com/doc/dev/mysql-rest-service/latest/restApi.html#authenticate-a-rest-user), and the bundled `mrs_plugin/sdk/python/mrs_base_classes.py` implementation used to check the SCRAM exchange. The plugin's SDK templates cover TypeScript, Python, and Swift, so this Java client implements the exchange itself.
 
 ## Verify
 
@@ -194,6 +193,6 @@ Prompt injection can still persuade the model to choose an available tool or cre
 
 The executor is part of the trusted Java application. Compromise of that process or its executor credential can bypass the human interaction. A production deployment needing a stronger separation should put confirmation in a separate service and bind it to authenticated user consent. This CLI uses environment variables for demo secrets, not a production secret store.
 
-Model prose can still be wrong. Our real read run supplied the right items and status but invented dollar signs despite the prompt. A scripted test also demonstrates that the model can claim cancellation while the authoritative record remains `PENDING`. The application logs the recorded request separately; only the confirmation response is evidence of a committed cancellation.
+Model prose can still be wrong. In the recorded run it called a `PROCESSING` order `PENDING` and promised status updates the CLI cannot send; an earlier build stored a cancellation reason the customer never gave. A scripted test also demonstrates that the model can claim cancellation while the authoritative record remains `PENDING`. The application prints the recorded request separately; only the confirmation response is evidence of a committed cancellation.
 
 The original native-view query-plan concerns still apply. No scale or latency benchmark is claimed. MRS reduces endpoint plumbing, but ownership rules, cancellation policy, audit design, retries, and human interaction still require code. Payments, stock reservation, or transactions across services would need additional application-service orchestration.

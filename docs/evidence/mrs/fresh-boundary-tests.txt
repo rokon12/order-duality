@@ -10,6 +10,6 @@ test_shipping_race_has_one_terminal_outcome (__main__.BoundaryTests.test_shippin
 test_stale_order_and_expired_request (__main__.BoundaryTests.test_stale_order_and_expired_request) ... ok
 
 ----------------------------------------------------------------------
-Ran 10 tests in 6.919s
+Ran 10 tests in 4.509s
 
 OK

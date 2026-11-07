@@ -1,0 +1,8 @@
+GRANT SELECT ON `order_demo`.`cancellation_requests` TO `mysql_rest_service_data_provider`@`%`
+GRANT SELECT, SELECT (`customer_id`, `principal_id`), INSERT, UPDATE, DELETE ON `order_demo`.`customer_principals` TO `mysql_rest_service_data_provider`@`%`
+GRANT SELECT ON `order_demo`.`order_summaries` TO `mysql_rest_service_data_provider`@`%`
+GRANT SELECT, SELECT (`created_at`, `customer_id`, `id`, `status`), INSERT, UPDATE, DELETE ON `order_demo`.`orders` TO `mysql_rest_service_data_provider`@`%`
+GRANT EXECUTE ON PROCEDURE `order_demo`.`confirm_cancellation` TO `mysql_rest_service_data_provider`@`%`
+GRANT EXECUTE ON PROCEDURE `order_demo`.`get_order` TO `mysql_rest_service_data_provider`@`%`
+GRANT EXECUTE ON PROCEDURE `order_demo`.`request_cancellation` TO `mysql_rest_service_data_provider`@`%`
+GRANT EXECUTE ON PROCEDURE `order_demo`.`whoami` TO `mysql_rest_service_data_provider`@`%`

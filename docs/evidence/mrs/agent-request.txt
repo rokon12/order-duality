@@ -1,2 +1,0 @@
-Assistant: I have requested cancellation of your order 1003. A proposal to cancel the order has been sent, but it is not yet confirmed. The status of this order will remain PENDING until you confirm or deny the cancellation request.
-Recorded request (requires separate confirmation): {"ok":true,"state":"PENDING","orderId":1003,"requestId":"246b1e38-d8ab-11f1-8ef1-be545d8d28fc"}

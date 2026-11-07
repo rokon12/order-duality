@@ -1,0 +1,30 @@
+Order assistant. Ask about your orders, or type /help.
+
+> Cancel order 1003. I ordered it by mistake.
+Assistant: I've received your request to cancel order 1003. The cancellation request has been created, but the order is still pending. I'll let you know if the cancellation is approved or denied.
+
+Please note that the cancellation is still pending and may be denied by the system. I'll keep you updated on the status.
+
+Request recorded. Order 1003 is not cancelled yet.
+  Request ID: f4aed01d-da81-11f1-9a09-8e5d4c15b1e0
+  Status:     PENDING
+Type /confirm to review and approve it.
+
+> /confirm
+Cancellation request for order 1003
+  Order status:   PENDING
+  Items:          3 x Braided USB-C Cable (CB-004) at 18.00 each
+  Reason:         "I ordered it by mistake" (written by the assistant)
+  Request status: PENDING
+  Expires:        2026-11-07 08:15:11 UTC
+  Request ID:     f4aed01d-da81-11f1-9a09-8e5d4c15b1e0
+
+Cancel order 1003? [y/N]: y
+Order 1003 cancelled.
+
+> /requests
+Order        Status     Expires                  Request ID
+1001         PENDING    2026-11-07 08:15:08 UTC  f2c1bd66-da81-11f1-9a09-8e5d4c15b1e0
+1003         CONFIRMED  2026-11-07 08:15:11 UTC  f4aed01d-da81-11f1-9a09-8e5d4c15b1e0
+
+> /quit

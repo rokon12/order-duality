@@ -1,0 +1,8 @@
+$ java -jar mrs-agent/target/mrs-agent.jar --ask Cancel\ order\ 1001. 
+Assistant: The cancellation request for order 1001 has been submitted. However, the order is still in the PENDING state, and the request is pending approval.
+
+Request recorded. Order 1001 is not cancelled yet.
+  Request ID: f2c1bd66-da81-11f1-9a09-8e5d4c15b1e0
+  Status:     PENDING
+To approve it, start an interactive session and enter: /confirm f2c1bd66-da81-11f1-9a09-8e5d4c15b1e0
+[exit 0]

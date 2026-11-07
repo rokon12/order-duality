@@ -1,13 +1,16 @@
- Network order-mrs-acceptance_default  Creating
- Network order-mrs-acceptance_default  Created
- Volume "order-mrs-acceptance_mrs-data"  Creating
- Volume "order-mrs-acceptance_mrs-data"  Created
- Container order-mrs-acceptance-mysql-1  Creating
- Container order-mrs-acceptance-mysql-1  Created
- Container order-mrs-acceptance-mysql-1  Starting
- Container order-mrs-acceptance-mysql-1  Started
- Container order-mrs-acceptance-mysql-1  Waiting
- Container order-mrs-acceptance-mysql-1  Healthy
+...+..+.+...............+..+++++++++++++++++++++++++++++++++++++++*...+....+...+++++++++++++++++++++++++++++++++++++++*..............+.......+..+.......+.........+.....+....+.....+...+.......+.......................+..........+...+......+.........+..+............+...+.......+..+.+........................+.........+..+...+.......+..+...+...+....+...+..+......+......+.+...+.....+.+.....+.............+........+...+.......+............+......+..+............+.+..+....+...+.....+.+......+.....+..........+...+...+..+.......+.....+......+.......+.....+...+....+........+......+....+...+..............+....+............+..+.+.....+....+...+...............++++++
+......+........+..................+.......+..+.+..+....+...+.....+.+.....+......+++++++++++++++++++++++++++++++++++++++*...+......+..+...+.......+...+..+....+.........+......+...+.....+...+....+++++++++++++++++++++++++++++++++++++++*....+...+......+..+...+...................+..+...+...+...++++++
+-----
+ Network order-mrs-article_default  Creating
+ Network order-mrs-article_default  Created
+ Volume "order-mrs-article_mrs-data"  Creating
+ Volume "order-mrs-article_mrs-data"  Created
+ Container order-mrs-article-mysql-1  Creating
+ Container order-mrs-article-mysql-1  Created
+ Container order-mrs-article-mysql-1  Starting
+ Container order-mrs-article-mysql-1  Started
+ Container order-mrs-article-mysql-1  Waiting
+ Container order-mrs-article-mysql-1  Healthy
 Cannot set LC_ALL to locale en_US.UTF-8: No such file or directory
 [33mWARNING: [0mUsing a password on the command line interface can be insecure.
 Cannot set LC_ALL to locale en_US.UTF-8: No such file or directory
@@ -96,4 +99,4 @@ GRANT ROLE to `bob`@`OrderMRS` added successfully.
 GRANT ROLE to `reader`@`OrderMRS` added successfully.
 
 GRANT ROLE to `executor`@`OrderMRS` added successfully.
-MRS ready at https://localhost:8444/orders
+MRS ready at https://localhost:8445/orders
